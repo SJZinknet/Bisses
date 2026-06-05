@@ -1,1 +1,10 @@
-
+[
+  {
+    "id": "tsa-creta",
+    "title": "Bisse de Tsa-Crêta",
+    "region": "Valais",
+    "commune": "Exemple",
+    "catalogue": "data/bisses/tsa-creta/catalogue.json",
+    "segments": "data/bisses/tsa-creta/segments.geojson"
+  }
+]
