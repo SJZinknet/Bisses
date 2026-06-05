@@ -1,1 +1,46 @@
-
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "tsa-creta-2026",
+    "title": "Bisse de Tsa-Crêta",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "tsa-creta",
+    "title": "Bisse de Tsa-Crêta",
+    "region": "Valais",
+    "commune": "Exemple",
+    "description": "Fiche de démonstration pour tester la future plateforme des bisses.",
+    "itinerary": "Itinéraire de démonstration à remplacer par les données réelles.",
+    "length_km": 4.8,
+    "altitude_min_m": 1320,
+    "altitude_max_m": 1580,
+    "difficulty": "T2",
+    "marked_trail": true,
+    "state": "partiellement en eau",
+    "tags": ["historique", "forêt", "panorama"]
+  },
+  "segment_categories": [
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "OPEN",
+      "color": "#416f48"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CAN",
+      "color": "#386f91"
+    },
+    {
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABD",
+      "color": "#8b6a42"
+    }
+  ],
+  "photos": [],
+  "external_resources": []
+}
