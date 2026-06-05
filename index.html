@@ -1,1 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventaire des bisses du Valais</title>
 
+  <link rel="stylesheet" href="assets/css/styles.css">
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+</head>
+
+<body>
+  <header class="site-header">
+    <p class="eyebrow">Inventaire cartographique</p>
+    <h1>Bisses du Valais</h1>
+    <p class="subtitle">
+      Prototype de plateforme pour documenter les tracés, les états, les photos
+      et les ressources liées aux bisses.
+    </p>
+  </header>
+
+  <main>
+    <section class="intro-card">
+      <div>
+        <h2>Carte générale</h2>
+        <p>
+          Cette première version lit des données GeoJSON exportées depuis le
+          futur workflow de <code>gestion_bisses.py</code>.
+        </p>
+      </div>
+
+      <div id="bisse-list" class="bisse-list"></div>
+    </section>
+
+    <section class="map-card">
+      <div id="map"></div>
+    </section>
+
+    <section id="bisse-detail" class="detail-card">
+      <p class="muted">Sélectionne un bisse sur la carte ou dans la liste.</p>
+    </section>
+  </main>
+
+  <footer>
+    Données préparées localement avec <code>gestion_bisses.py</code>.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
