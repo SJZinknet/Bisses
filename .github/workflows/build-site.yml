@@ -1,0 +1,33 @@
+name: Build Bisses site
+
+on:
+  push:
+    paths:
+      - "build_bisses.py"
+      - ".github/workflows/build-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Générer le site
+        run: python build_bisses.py
+
+      - name: Commit des fichiers générés
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Génération automatique du site"
+          file_pattern: "index.html .nojekyll README.md assets/css/styles.css assets/js/app.js"
