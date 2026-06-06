@@ -580,12 +580,12 @@ const VALAIS_ZOOM = 17;
 const MIN_ZOOM = 16;
 const MAX_ZOOM = 27;
 
-const SHOW_SEGMENTS_OPEN_CANALIZED_AT_ZOOM = 18;
-const SHOW_SEGMENTS_ABANDONED_AT_ZOOM = 19;
+const SHOW_SEGMENTS_OPEN_CANALIZED_AT_ZOOM = 19;
+const SHOW_SEGMENTS_ABANDONED_AT_ZOOM = 20;
 
 const SEGMENT_STYLE = {
-  outlineWeight: 16,
-  colorWeight: 10,
+  outlineWeight: 14,
+  colorWeight: 9,
   opacity: 0.99
 };
 
