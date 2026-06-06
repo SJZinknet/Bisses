@@ -1,9 +1,9 @@
 [
   {
     "id": "tsa-creta",
-    "title": "Bisse de Tsa-Crêta",
-    "region": "Valais",
-    "commune": "Exemple",
+    "title": "Bisse de Tsa Crêta",
+    "region": "Hérens",
+    "commune": "Mont-Noble",
     "catalogue": "data/bisses/tsa-creta/catalogue.json",
     "segments": "data/bisses/tsa-creta/segments.geojson"
   }

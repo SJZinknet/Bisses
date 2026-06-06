@@ -28,26 +28,26 @@
     {
       "id": "unknown",
       "name": "Non classé",
-      "file_code": "UNK",
+      "file_code": "NON_CLASSE",
       "color": "#8e44ad"
     },
     {
       "id": "open",
       "name": "À ciel ouvert",
-      "file_code": "OPEN",
-      "color": "#416f48"
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
     },
     {
       "id": "canalized",
       "name": "Canalisé",
-      "file_code": "CAN",
-      "color": "#386f91"
+      "file_code": "CANALISE",
+      "color": "#111111"
     },
     {
       "id": "abandoned",
       "name": "Abandonné",
-      "file_code": "ABD",
-      "color": "#8b6a42"
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
     }
   ],
   "photos": [
