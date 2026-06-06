@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "swiss-epsg2056-zoom-table-2026-06-06-fixed-copy"
+# BUILD_VERSION = "swiss-epsg2056-overview-segments-2026-06-06-a"
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ INDEX_HTML = r"""<!doctype html>
     <div class="brand">
       <div class="eyebrow">Inventaire cartographique</div>
       <h1>Bisses du Valais</h1>
-      <div class="build-version">swiss-epsg2056-zoom-table-2026-06-06-fixed-copy</div>
+      <div class="build-version">swiss-epsg2056-overview-segments-2026-06-06-a</div>
     </div>
 
     <div class="toolbar">
@@ -95,6 +95,11 @@ body {
   height: 100vh;
   height: 100dvh;
   background: #dfe5da;
+}
+
+/* Test global : fond de carte légèrement blanchi pour faire ressortir les segments. */
+.leaflet-tile-pane {
+  filter: brightness(1.08) saturate(0.88) contrast(0.94);
 }
 
 button {
@@ -564,78 +569,25 @@ h3 {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build swiss-epsg2056-zoom-table-2026-06-06-fixed-copy");
+console.log("Bisses build swiss-epsg2056-overview-segments-2026-06-06-a");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
 const MIN_ZOOM = 16;
 const MAX_ZOOM = 27;
 
+const OVERVIEW_SEGMENTS_ZOOM_OPEN_CANALIZED = 20;
+const OVERVIEW_SEGMENTS_ZOOM_ABANDONED = 21;
+
 const MAP_SCALE_STEPS = [
-  {
-    min: 16,
-    max: 16,
-    label: "Fond général",
-    layer: "ch.swisstopo.pixelkarte-farbe",
-    format: "jpeg",
-    maxNativeZoom: 27
-  },
-  {
-    min: 17,
-    max: 17,
-    label: "CN 1:1 million",
-    layer: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale",
-    format: "jpeg",
-    maxNativeZoom: 27
-  },
-  {
-    min: 18,
-    max: 18,
-    label: "CN 1:500k",
-    layer: "ch.swisstopo.pixelkarte-farbe-pk500.noscale",
-    format: "jpeg",
-    maxNativeZoom: 27
-  },
-  {
-    min: 19,
-    max: 19,
-    label: "CN 1:200k",
-    layer: "ch.swisstopo.pixelkarte-farbe-pk200.noscale",
-    format: "jpeg",
-    maxNativeZoom: 27
-  },
-  {
-    min: 20,
-    max: 20,
-    label: "CN 1:100k",
-    layer: "ch.swisstopo.pixelkarte-farbe-pk100.noscale",
-    format: "jpeg",
-    maxNativeZoom: 27
-  },
-  {
-    min: 21,
-    max: 21,
-    label: "CN 1:50k",
-    layer: "ch.swisstopo.pixelkarte-farbe-pk50.noscale",
-    format: "jpeg",
-    maxNativeZoom: 27
-  },
-  {
-    min: 22,
-    max: 23,
-    label: "CN 1:25k",
-    layer: "ch.swisstopo.pixelkarte-farbe-pk25.noscale",
-    format: "jpeg",
-    maxNativeZoom: 27
-  },
-  {
-    min: 24,
-    max: 27,
-    label: "CN 1:10k",
-    layer: "ch.swisstopo.landeskarte-farbe-10",
-    format: "png",
-    maxNativeZoom: 27
-  }
+  { min: 16, max: 16, label: "Fond général", layer: "ch.swisstopo.pixelkarte-farbe", format: "jpeg", maxNativeZoom: 27 },
+  { min: 17, max: 17, label: "CN 1:1 million", layer: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale", format: "jpeg", maxNativeZoom: 27 },
+  { min: 18, max: 18, label: "CN 1:500k", layer: "ch.swisstopo.pixelkarte-farbe-pk500.noscale", format: "jpeg", maxNativeZoom: 27 },
+  { min: 19, max: 19, label: "CN 1:200k", layer: "ch.swisstopo.pixelkarte-farbe-pk200.noscale", format: "jpeg", maxNativeZoom: 27 },
+  { min: 20, max: 20, label: "CN 1:100k", layer: "ch.swisstopo.pixelkarte-farbe-pk100.noscale", format: "jpeg", maxNativeZoom: 27 },
+  { min: 21, max: 21, label: "CN 1:50k", layer: "ch.swisstopo.pixelkarte-farbe-pk50.noscale", format: "jpeg", maxNativeZoom: 27 },
+  { min: 22, max: 23, label: "CN 1:25k", layer: "ch.swisstopo.pixelkarte-farbe-pk25.noscale", format: "jpeg", maxNativeZoom: 27 },
+  { min: 24, max: 27, label: "CN 1:10k", layer: "ch.swisstopo.landeskarte-farbe-10", format: "png", maxNativeZoom: 27 }
 ];
 
 const SATELLITE_STEP = {
@@ -662,12 +614,16 @@ const FALLBACK_CATEGORIES = {
 const state = {
   index: [],
   cache: new Map(),
+  selectedId: null,
   base: "carto",
   currentStepKey: "",
+  currentOverviewKey: "",
   baseLayer: null,
   bisseMarkers: L.layerGroup(),
-  outlineLayer: null,
-  colorLayer: null,
+  overviewOutlineLayer: null,
+  overviewColorLayer: null,
+  selectedOutlineLayer: null,
+  selectedColorLayer: null,
   photoLayer: L.layerGroup()
 };
 
@@ -722,6 +678,12 @@ const map = L.map("map", {
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
+map.createPane("overviewOutlinePane");
+map.getPane("overviewOutlinePane").style.zIndex = 395;
+
+map.createPane("overviewSegmentPane");
+map.getPane("overviewSegmentPane").style.zIndex = 400;
+
 map.createPane("outlinePane");
 map.getPane("outlinePane").style.zIndex = 410;
 
@@ -736,7 +698,6 @@ state.photoLayer.addTo(map);
 
 function stepForZoom(zoom) {
   const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
-
   return MAP_SCALE_STEPS.find((step) => clampedZoom >= step.min && clampedZoom <= step.max)
     || MAP_SCALE_STEPS[0];
 }
@@ -791,35 +752,6 @@ function toggleBase() {
 
   state.currentStepKey = "";
   refreshBaseLayer();
-}
-
-map.on("zoomend", refreshBaseLayer);
-
-map.setView(VALAIS_CENTER, VALAIS_ZOOM);
-refreshBaseLayer();
-
-function openPanel() {
-  $("bisse-panel").classList.add("is-open");
-}
-
-function closePanel() {
-  $("bisse-panel").classList.remove("is-open");
-}
-
-function openContext() {
-  $("context-panel").classList.add("is-open");
-}
-
-function closeContext() {
-  $("context-panel").classList.remove("is-open");
-}
-
-function openList() {
-  $("list-panel").classList.add("is-open");
-}
-
-function closeList() {
-  $("list-panel").classList.remove("is-open");
 }
 
 function cataloguePath(item) {
@@ -890,6 +822,140 @@ function boundsWithPhotos(bounds, photos) {
   return bounds;
 }
 
+function overviewTypesForZoom(zoom) {
+  if (zoom >= OVERVIEW_SEGMENTS_ZOOM_ABANDONED) {
+    return ["open", "canalized", "abandoned"];
+  }
+
+  if (zoom >= OVERVIEW_SEGMENTS_ZOOM_OPEN_CANALIZED) {
+    return ["open", "canalized"];
+  }
+
+  return [];
+}
+
+function removeOverviewSegments() {
+  if (state.overviewOutlineLayer) {
+    map.removeLayer(state.overviewOutlineLayer);
+    state.overviewOutlineLayer = null;
+  }
+
+  if (state.overviewColorLayer) {
+    map.removeLayer(state.overviewColorLayer);
+    state.overviewColorLayer = null;
+  }
+}
+
+function buildOverviewFeatureCollection(dataList, allowedTypes) {
+  const features = [];
+
+  for (const data of dataList) {
+    const cats = categories(data.catalogue);
+    const info = data.catalogue.bisse_info || {};
+    const bisseTitle = info.title || data.item.title || "Bisse";
+
+    for (const feature of data.geojson.features || []) {
+      const type = feature?.properties?.structure_type || "unknown";
+      if (!allowedTypes.includes(type)) continue;
+
+      const cloned = JSON.parse(JSON.stringify(feature));
+      cloned.properties = cloned.properties || {};
+      cloned.properties.__bisse_title = bisseTitle;
+      cloned.properties.__category_name = categoryFor(cloned, cats).name;
+      cloned.properties.__category_color = categoryFor(cloned, cats).color;
+      features.push(cloned);
+    }
+  }
+
+  return {
+    type: "FeatureCollection",
+    features
+  };
+}
+
+async function refreshOverviewSegments() {
+  const zoom = map.getZoom();
+  const allowedTypes = overviewTypesForZoom(zoom);
+  const key = `${zoom}:${allowedTypes.join(",")}:${state.selectedId || ""}:${state.index.length}`;
+
+  if (!allowedTypes.length) {
+    state.currentOverviewKey = key;
+    removeOverviewSegments();
+    return;
+  }
+
+  if (state.currentOverviewKey === key && state.overviewColorLayer) {
+    return;
+  }
+
+  state.currentOverviewKey = key;
+  removeOverviewSegments();
+
+  const dataList = [];
+
+  for (const item of state.index) {
+    try {
+      const data = await loadBisse(item);
+      dataList.push(data);
+    } catch (error) {
+      console.warn("Bisse non chargé pour les segments d'ensemble", item, error);
+    }
+  }
+
+  const overviewGeojson = buildOverviewFeatureCollection(dataList, allowedTypes);
+
+  state.overviewOutlineLayer = L.geoJSON(overviewGeojson, {
+    pane: "overviewOutlinePane",
+    style: {
+      color: "#ffffff",
+      weight: 7,
+      opacity: 0.88,
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: false
+    }
+  }).addTo(map);
+
+  state.overviewColorLayer = L.geoJSON(overviewGeojson, {
+    pane: "overviewSegmentPane",
+    style: (feature) => ({
+      color: feature.properties.__category_color || "#777777",
+      weight: 4,
+      opacity: 0.82,
+      lineCap: "round",
+      lineJoin: "round"
+    }),
+    onEachFeature: (feature, layer) => {
+      const title = feature.properties.__bisse_title || "Bisse";
+      const type = feature.properties.__category_name || "Segment";
+
+      layer.bindTooltip(`${escapeHtml(title)} — ${escapeHtml(type)}`, {
+        className: "segment-tooltip",
+        sticky: true
+      });
+
+      layer.on("click", () => {
+        $("context-content").innerHTML = `
+          <h3>${escapeHtml(type)}</h3>
+          <div class="context-row">
+            <strong>Bisse</strong>
+            <span>${escapeHtml(title)}</span>
+          </div>
+          <div class="context-row">
+            <strong>Type</strong>
+            <span>${escapeHtml(type)}</span>
+          </div>
+          <div class="context-row">
+            <strong>État de l’eau</strong>
+            <span>${escapeHtml(WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu")}</span>
+          </div>
+        `;
+        openContext();
+      });
+    }
+  }).addTo(map);
+}
+
 function markerIcon() {
   return L.divIcon({
     className: "",
@@ -955,14 +1021,16 @@ async function renderMarkers() {
 }
 
 function clearSelected() {
-  if (state.outlineLayer) {
-    map.removeLayer(state.outlineLayer);
-    state.outlineLayer = null;
+  if (state.selectedOutlineLayer) {
+    map.removeLayer(state.selectedOutlineLayer);
+    state.selectedOutlineLayer = null;
   }
-  if (state.colorLayer) {
-    map.removeLayer(state.colorLayer);
-    state.colorLayer = null;
+
+  if (state.selectedColorLayer) {
+    map.removeLayer(state.selectedColorLayer);
+    state.selectedColorLayer = null;
   }
+
   state.photoLayer.clearLayers();
   $("legend").innerHTML = "";
 }
@@ -976,12 +1044,12 @@ function renderLegend(catalogue) {
   `).join("");
 }
 
-function renderSegments(data) {
+function renderSelectedSegments(data) {
   const cats = categories(data.catalogue);
   const info = data.catalogue.bisse_info || {};
   const title = info.title || data.item.title || "Bisse";
 
-  state.outlineLayer = L.geoJSON(data.geojson, {
+  state.selectedOutlineLayer = L.geoJSON(data.geojson, {
     pane: "outlinePane",
     style: {
       color: "#ffffff",
@@ -993,7 +1061,7 @@ function renderSegments(data) {
     }
   }).addTo(map);
 
-  state.colorLayer = L.geoJSON(data.geojson, {
+  state.selectedColorLayer = L.geoJSON(data.geojson, {
     pane: "segmentPane",
     style: (feature) => ({
       color: categoryFor(feature, cats).color || "#777777",
@@ -1174,6 +1242,7 @@ async function selectBisse(id) {
   const item = state.index.find((x) => x.id === id);
   if (!item) return;
 
+  state.selectedId = id;
   clearSelected();
   showStatus("Chargement du bisse…");
 
@@ -1181,7 +1250,7 @@ async function selectBisse(id) {
     const data = await loadBisse(item);
     renderPanel(data);
     renderLegend(data.catalogue);
-    renderSegments(data);
+    renderSelectedSegments(data);
     renderPhotos(data);
 
     const b = boundsWithPhotos(geoBounds(data.geojson), selectedPhotos(data.catalogue));
@@ -1204,6 +1273,7 @@ async function selectBisse(id) {
 }
 
 function resetValais() {
+  state.selectedId = null;
   clearSelected();
   closeContext();
 
@@ -1213,10 +1283,35 @@ function resetValais() {
   $("panel-content").innerHTML = `
     <p class="muted">
       Cliquez sur une pastille pour afficher le tracé détaillé d’un bisse.
+      Les segments apparaissent automatiquement à partir du zoom 20.
     </p>
   `;
 
   openPanel();
+}
+
+function openPanel() {
+  $("bisse-panel").classList.add("is-open");
+}
+
+function closePanel() {
+  $("bisse-panel").classList.remove("is-open");
+}
+
+function openContext() {
+  $("context-panel").classList.add("is-open");
+}
+
+function closeContext() {
+  $("context-panel").classList.remove("is-open");
+}
+
+function openList() {
+  $("list-panel").classList.add("is-open");
+}
+
+function closeList() {
+  $("list-panel").classList.remove("is-open");
 }
 
 async function init() {
@@ -1227,6 +1322,7 @@ async function init() {
     renderList();
     await renderMarkers();
     resetValais();
+    await refreshOverviewSegments();
 
     if (!state.index.length) {
       $("panel-content").innerHTML = `
@@ -1249,6 +1345,11 @@ async function init() {
   }
 }
 
+map.on("zoomend", () => {
+  refreshBaseLayer();
+  refreshOverviewSegments();
+});
+
 $("btn-basemap").addEventListener("click", toggleBase);
 $("btn-valais").addEventListener("click", resetValais);
 $("btn-list").addEventListener("click", openList);
@@ -1256,6 +1357,8 @@ $("btn-close-list").addEventListener("click", closeList);
 $("btn-close-panel").addEventListener("click", closePanel);
 $("btn-close-context").addEventListener("click", closeContext);
 
+map.setView(VALAIS_CENTER, VALAIS_ZOOM);
+refreshBaseLayer();
 init();
 """
 
@@ -1266,7 +1369,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-swiss-epsg2056-zoom-table-2026-06-06-fixed-copy
+swiss-epsg2056-overview-segments-2026-06-06-a
 
 Générer le site :
 python build_bisses.py
@@ -1328,7 +1431,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : swiss-epsg2056-zoom-table-2026-06-06-fixed-copy")
+    print("Version : swiss-epsg2056-overview-segments-2026-06-06-a")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés :")
     print("  - index.html")
