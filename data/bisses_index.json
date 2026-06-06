@@ -1,5 +1,21 @@
 [
   {
+    "id": "bisse-de-lentine",
+    "title": "Bisse de Lentine",
+    "region": "Sionne",
+    "commune": "Savièse",
+    "catalogue": "data/bisses/bisse-de-lentine/catalogue.json",
+    "segments": "data/bisses/bisse-de-lentine/segments.geojson"
+  },
+  {
+    "id": "salins",
+    "title": "Bisse de Salins",
+    "region": "Nendaz",
+    "commune": "Nendaz",
+    "catalogue": "data/bisses/salins/catalogue.json",
+    "segments": "data/bisses/salins/segments.geojson"
+  },
+  {
     "id": "tsa-creta",
     "title": "Bisse de Tsa Crêta",
     "region": "Hérens",
@@ -8,11 +24,19 @@
     "segments": "data/bisses/tsa-creta/segments.geojson"
   },
   {
-    "id": "local-salins-adrien",
-    "title": "Local - Salins (Adrien)",
+    "id": "tsittoret",
+    "title": "Bisse de Tsittoret",
+    "region": "Raspille",
+    "commune": "",
+    "catalogue": "data/bisses/tsittoret/catalogue.json",
+    "segments": "data/bisses/tsittoret/segments.geojson"
+  },
+  {
+    "id": "bisse-de-vercorin",
+    "title": "Bisse de Vercorin",
     "region": "Valais",
     "commune": "",
-    "catalogue": "data/bisses/local-salins-adrien/catalogue.json",
-    "segments": "data/bisses/local-salins-adrien/segments.geojson"
+    "catalogue": "data/bisses/bisse-de-vercorin/catalogue.json",
+    "segments": "data/bisses/bisse-de-vercorin/segments.geojson"
   }
 ]

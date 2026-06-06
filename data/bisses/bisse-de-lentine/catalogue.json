@@ -1,16 +1,16 @@
 {
   "schema_version": "0.1",
   "project": {
-    "id": "local-salins-adrien-2026",
-    "title": "Local - Salins (Adrien)",
+    "id": "bisse-de-lentine-2026",
+    "title": "Bisse de Lentine",
     "year": 2026,
     "source_folder": ""
   },
   "bisse_info": {
-    "slug": "local-salins-adrien",
-    "title": "Local - Salins (Adrien)",
-    "region": "Valais",
-    "commune": "",
+    "slug": "bisse-de-lentine",
+    "title": "Bisse de Lentine",
+    "region": "Sionne",
+    "commune": "Savièse",
     "description": "",
     "itinerary": "",
     "length_km": null,
