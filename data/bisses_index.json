@@ -6,5 +6,13 @@
     "commune": "Mont-Noble",
     "catalogue": "data/bisses/tsa-creta/catalogue.json",
     "segments": "data/bisses/tsa-creta/segments.geojson"
+  },
+  {
+    "id": "local-salins-adrien",
+    "title": "Local - Salins (Adrien)",
+    "region": "Valais",
+    "commune": "",
+    "catalogue": "data/bisses/local-salins-adrien/catalogue.json",
+    "segments": "data/bisses/local-salins-adrien/segments.geojson"
   }
 ]
