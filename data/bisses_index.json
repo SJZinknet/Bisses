@@ -1,5 +1,13 @@
 [
   {
+    "id": "bisse-de-clavau",
+    "title": "Bisse de Clavau",
+    "region": "Liène",
+    "commune": "Ayent",
+    "catalogue": "data/bisses/bisse-de-clavau/catalogue.json",
+    "segments": "data/bisses/bisse-de-clavau/segments.geojson"
+  },
+  {
     "id": "bisse-de-lentine",
     "title": "Bisse de Lentine",
     "region": "Sionne",
@@ -14,6 +22,22 @@
     "commune": "Nendaz",
     "catalogue": "data/bisses/salins/catalogue.json",
     "segments": "data/bisses/salins/segments.geojson"
+  },
+  {
+    "id": "bisse-de-st-luc",
+    "title": "Bisse de St-Luc",
+    "region": "Anniviers",
+    "commune": "Anniviers",
+    "catalogue": "data/bisses/bisse-de-st-luc/catalogue.json",
+    "segments": "data/bisses/bisse-de-st-luc/segments.geojson"
+  },
+  {
+    "id": "bisse-de-st-martin",
+    "title": "Bisse de St. Martin",
+    "region": "Hérens",
+    "commune": "St. Martin",
+    "catalogue": "data/bisses/bisse-de-st-martin/catalogue.json",
+    "segments": "data/bisses/bisse-de-st-martin/segments.geojson"
   },
   {
     "id": "tsa-creta",
@@ -38,5 +62,21 @@
     "commune": "",
     "catalogue": "data/bisses/bisse-de-vercorin/catalogue.json",
     "segments": "data/bisses/bisse-de-vercorin/segments.geojson"
+  },
+  {
+    "id": "bisse-roux",
+    "title": "Bisse Roux",
+    "region": "Anniviers",
+    "commune": "Anniviers",
+    "catalogue": "data/bisses/bisse-roux/catalogue.json",
+    "segments": "data/bisses/bisse-roux/segments.geojson"
+  },
+  {
+    "id": "fiescherwyssa",
+    "title": "Fiescherwyssa",
+    "region": "Conches",
+    "commune": "Fieschertal",
+    "catalogue": "data/bisses/fiescherwyssa/catalogue.json",
+    "segments": "data/bisses/fiescherwyssa/segments.geojson"
   }
 ]
