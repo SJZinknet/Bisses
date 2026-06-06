@@ -1283,7 +1283,78 @@ README = r'''# Bisses
 Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses du Valais.
 
 Version générée par :
-
-```text
 build_bisses.py
 swiss-scale-steps-2026-06-06-copy
+
+Générer le site :
+python build_bisses.py
+
+Le script génère :
+- index.html
+- .nojekyll
+- assets/css/styles.css
+- assets/js/app.js
+
+Il ne modifie pas :
+- data/
+- media/
+
+Tester localement :
+python -m http.server 8000
+
+Puis ouvrir :
+http://localhost:8000
+
+Données attendues :
+data/
+- bisses_index.json
+- bisses/<slug>/catalogue.json
+- bisses/<slug>/segments.geojson
+
+media/
+- <slug>/photo_001_web.jpg
+
+Les coordonnées GeoJSON restent en ordre standard :
+[longitude, latitude]
+'''
+
+
+def write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def build(out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    write(out_dir / "index.html", INDEX_HTML)
+    write(out_dir / ".nojekyll", "")
+    write(out_dir / "assets" / "css" / "styles.css", STYLES_CSS)
+    write(out_dir / "assets" / "js" / "app.js", APP_JS)
+    write(out_dir / "README.md", README)
+
+    (out_dir / "data" / "bisses").mkdir(parents=True, exist_ok=True)
+    (out_dir / "media").mkdir(parents=True, exist_ok=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Génère la plateforme GitHub Pages Bisses.")
+    parser.add_argument("--out", default=".", help="Dossier de sortie, par défaut le dossier courant.")
+    args = parser.parse_args()
+
+    out_dir = Path(args.out).expanduser().resolve()
+    build(out_dir)
+
+    print("Plateforme Bisses générée.")
+    print("Version : swiss-scale-steps-2026-06-06-copy")
+    print(f"Dossier : {out_dir}")
+    print("Fichiers générés :")
+    print("  - index.html")
+    print("  - .nojekyll")
+    print("  - assets/css/styles.css")
+    print("  - assets/js/app.js")
+    print("Données préservées : data/ et media/")
+
+
+if __name__ == "__main__":
+    main()
