@@ -584,7 +584,7 @@ const SHOW_SEGMENTS_OPEN_CANALIZED_AT_ZOOM = 19;
 const SHOW_SEGMENTS_ABANDONED_AT_ZOOM = 20;
 
 const SEGMENT_STYLE = {
-  outlineWeight: 14,
+  outlineWeight: 13,
   colorWeight: 9,
   opacity: 0.99
 };
