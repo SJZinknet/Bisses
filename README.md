@@ -1,38 +1,20 @@
 # Bisses
 
-Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses du Valais.
+Plateforme statique GitHub Pages pour l'inventaire cartographique des bisses du Valais.
 
-Version générée par :
-build_bisses.py
-swiss-scale-steps-2026-06-06-copy
+## Générer les fichiers fixes du site
 
-Générer le site :
+```bash
 python build_bisses.py
+```
 
-Le script génère :
-- index.html
-- .nojekyll
-- assets/css/styles.css
-- assets/js/app.js
+Le script génère `index.html`, `.nojekyll`, `assets/css/styles.css` et `assets/js/app.js`.
+Il ne modifie pas les données `data/` ni les images `media/`.
 
-Il ne modifie pas :
-- data/
-- media/
+## Tester localement
 
-Tester localement :
+```bash
 python -m http.server 8000
+```
 
-Puis ouvrir :
-http://localhost:8000
-
-Données attendues :
-data/
-- bisses_index.json
-- bisses/<slug>/catalogue.json
-- bisses/<slug>/segments.geojson
-
-media/
-- <slug>/photo_001_web.jpg
-
-Les coordonnées GeoJSON restent en ordre standard :
-[longitude, latitude]
+Puis ouvrir : http://localhost:8000
