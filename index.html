@@ -4,59 +4,58 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bisses du Valais</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="assets/css/styles.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
+
 <body>
-  <div id="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <p class="eyebrow">Inventaire cartographique</p>
-        <h1>Bisses du Valais</h1>
-      </div>
-      <nav class="top-actions" aria-label="Contrôles de la carte">
-        <button id="btn-valais" class="ui-button" type="button">Vue Valais</button>
-        <button id="btn-list" class="ui-button" type="button">Liste des bisses</button>
-        <button id="btn-basemap" class="ui-button" type="button">Satellite</button>
-      </nav>
-    </header>
-    <main class="map-stage">
-      <div id="map" aria-label="Carte interactive des bisses du Valais"></div>
-      <aside id="bisse-panel" class="side-panel is-open" aria-label="Informations du bisse">
-        <div class="panel-header">
-          <div>
-            <p class="panel-kicker">Bisse sélectionné</p>
-            <h2 id="panel-title">Bisses du Valais</h2>
-          </div>
-          <button id="btn-close-panel" class="icon-button" type="button" aria-label="Fermer le panneau">×</button>
-        </div>
-        <div id="panel-content" class="panel-content">
-          <p class="muted">Cliquez sur une pastille pour afficher le tracé détaillé d’un bisse.</p>
-        </div>
-      </aside>
-      <aside id="context-panel" class="context-panel" aria-label="Informations contextuelles">
-        <div class="context-header">
-          <p class="panel-kicker">Détail cartographique</p>
-          <button id="btn-close-context" class="icon-button" type="button" aria-label="Fermer le détail">×</button>
-        </div>
-        <div id="context-content">
-          <p class="muted">Cliquez sur une trace ou une photo pour afficher ses informations.</p>
-        </div>
-      </aside>
-      <section id="list-panel" class="list-panel" aria-label="Liste des bisses">
-        <div class="panel-header">
-          <div>
-            <p class="panel-kicker">Vue alternative</p>
-            <h2>Liste des bisses</h2>
-          </div>
-          <button id="btn-close-list" class="icon-button" type="button" aria-label="Fermer la liste">×</button>
-        </div>
-        <div id="bisse-list" class="bisse-list"></div>
-      </section>
-      <div id="map-legend" class="map-legend" aria-label="Légende"></div>
-    </main>
-  </div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <div id="map"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="eyebrow">Inventaire cartographique</div>
+      <h1>Bisses du Valais</h1>
+      <div class="build-version">swiss-scale-steps-2026-06-06-copy</div>
+    </div>
+
+    <div class="toolbar" aria-label="Contrôles de la carte">
+      <button id="btn-valais" type="button">Vue Valais</button>
+      <button id="btn-list" type="button">Liste</button>
+      <button id="btn-basemap" type="button">Satellite</button>
+    </div>
+  </header>
+
+  <aside id="bisse-panel" class="panel panel-main">
+    <button id="btn-close-panel" class="close-button" type="button" aria-label="Fermer">×</button>
+    <div class="panel-kicker">Bisse sélectionné</div>
+    <h2 id="panel-title">Bisses du Valais</h2>
+    <div id="panel-content">
+      <p class="muted">Cliquez sur une pastille pour afficher un bisse.</p>
+    </div>
+  </aside>
+
+  <aside id="context-panel" class="panel panel-context">
+    <button id="btn-close-context" class="close-button" type="button" aria-label="Fermer">×</button>
+    <div class="panel-kicker">Détail</div>
+    <div id="context-content">
+      <p class="muted">Cliquez sur une trace ou une photo.</p>
+    </div>
+  </aside>
+
+  <aside id="list-panel" class="panel panel-list">
+    <button id="btn-close-list" class="close-button" type="button" aria-label="Fermer">×</button>
+    <div class="panel-kicker">Vue alternative</div>
+    <h2>Liste des bisses</h2>
+    <div id="bisse-list"></div>
+  </aside>
+
+  <div id="legend" class="legend"></div>
+  <div id="scale-pill" class="scale-pill">Fond carte</div>
+  <div id="status-pill" class="status-pill">Chargement…</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-tilelayer-swiss@2.4.0/dist/Leaflet.TileLayer.Swiss.umd.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
