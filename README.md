@@ -4,7 +4,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-swiss-epsg2056-zoom-table-2026-06-06-fixed-copy
+swiss-epsg2056-overview-segments-2026-06-06-a
 
 Générer le site :
 python build_bisses.py

@@ -23,6 +23,11 @@ body {
   background: #dfe5da;
 }
 
+/* Test global : fond de carte légèrement blanchi pour faire ressortir les segments. */
+.leaflet-tile-pane {
+  filter: brightness(1.08) saturate(0.88) contrast(0.94);
+}
+
 button {
   font: inherit;
 }
