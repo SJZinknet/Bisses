@@ -4,11 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bisses du Valais</title>
-
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-
 <body>
   <div id="map"></div>
 
@@ -16,9 +14,8 @@
     <div class="brand">
       <div class="eyebrow">Inventaire cartographique</div>
       <h1>Bisses du Valais</h1>
-      <div class="build-version">swiss-epsg2056-overview-segments-2026-06-06-a</div>
+      <div class="build-version">bisses-overview-segments-2026-06-06-b</div>
     </div>
-
     <div class="toolbar">
       <button id="btn-valais" type="button">Vue Valais</button>
       <button id="btn-list" type="button">Liste</button>
@@ -30,17 +27,13 @@
     <button id="btn-close-panel" class="close-button" type="button" aria-label="Fermer">×</button>
     <div class="panel-kicker">Bisse sélectionné</div>
     <h2 id="panel-title">Bisses du Valais</h2>
-    <div id="panel-content">
-      <p class="muted">Cliquez sur une pastille pour afficher un bisse.</p>
-    </div>
+    <div id="panel-content"><p class="muted">Cliquez sur une pastille pour afficher un bisse.</p></div>
   </aside>
 
   <aside id="context-panel" class="panel panel-context">
     <button id="btn-close-context" class="close-button" type="button" aria-label="Fermer">×</button>
     <div class="panel-kicker">Détail</div>
-    <div id="context-content">
-      <p class="muted">Cliquez sur une trace ou une photo.</p>
-    </div>
+    <div id="context-content"><p class="muted">Cliquez sur une trace ou une photo.</p></div>
   </aside>
 
   <aside id="list-panel" class="panel panel-list">
