@@ -8,6 +8,11 @@
         "name": "Segment 001",
         "order": 1,
         "structure_type": "open",
+        "structure_types": [
+          "open"
+        ],
+        "display_mode": "single",
+        "bicolor_colors": [],
         "water_status": "unknown",
         "continuous": false
       },
@@ -1120,6 +1125,11 @@
         "name": "Segment 002",
         "order": 2,
         "structure_type": "abandoned",
+        "structure_types": [
+          "abandoned"
+        ],
+        "display_mode": "single",
+        "bicolor_colors": [],
         "water_status": "unknown",
         "continuous": true
       },

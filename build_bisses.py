@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-overview-segments-2026-06-06-c"
+# BUILD_VERSION = "bisses-bicolor-polylineoffset-2026-06-07-a"
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ INDEX_HTML = r"""<!doctype html>
     <div class="brand">
       <div class="eyebrow">Inventaire cartographique</div>
       <h1>Bisses du Valais</h1>
-      <div class="build-version">bisses-overview-segments-2026-06-06-c</div>
+      <div class="build-version">bisses-bicolor-polylineoffset-2026-06-07-a</div>
     </div>
 
     <div class="toolbar">
@@ -65,6 +65,7 @@ INDEX_HTML = r"""<!doctype html>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-tilelayer-swiss@2.4.0/dist/Leaflet.TileLayer.Swiss.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-polylineoffset@1.1.1/leaflet.polylineoffset.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
@@ -96,12 +97,12 @@ body {
   background: #dfe5da;
 }
 
-/* Test esthétique : fond de carte blanchi pour mieux faire ressortir les segments. */
+/* Fond Swisstopo légèrement blanchi : assez doux pour rester patrimonial. */
 .leaflet-tile-pane {
-  filter: brightness(1.14) saturate(0.78) contrast(0.88);
+  filter: brightness(1.10) saturate(0.82) contrast(0.90);
 }
 
-/* Sécurité : les pastilles disparaissent dès que la carte passe en mode segments. */
+/* Sécurité : les pastilles disparaissent dès que la carte passe en mode traces. */
 #map.segments-mode .bisse-marker {
   display: none;
 }
@@ -473,7 +474,7 @@ h3 {
   height: 30px;
   border: 3px solid #fff;
   border-radius: 50%;
-  background: #365f40;
+  background: #1e88e5;
   box-shadow: 0 4px 15px rgba(0,0,0,.35);
 }
 
@@ -573,7 +574,7 @@ h3 {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-overview-segments-2026-06-06-c");
+console.log("Bisses build bisses-bicolor-polylineoffset-2026-06-07-a");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -587,6 +588,14 @@ const SEGMENT_STYLE = {
   outlineWeight: 13,
   colorWeight: 9,
   opacity: 0.99
+};
+
+const BICOLOR_STYLE = {
+  outlineWeight: 13,
+  flankWeight: 5.8,
+  offset: 2.35,
+  opacity: 0.99,
+  clickWeight: 20
 };
 
 const MAP_SCALE_STEPS = [
@@ -615,9 +624,10 @@ const WATER_LABELS = {
 };
 
 const FALLBACK_CATEGORIES = {
-  open: { id: "open", name: "À ciel ouvert", color: "#777777" },
-  canalized: { id: "canalized", name: "Canalisé", color: "#777777" },
-  abandoned: { id: "abandoned", name: "Abandonné", color: "#777777" },
+  open: { id: "open", name: "À ciel ouvert", color: "#1e88e5" },
+  canalized: { id: "canalized", name: "Canalisé", color: "#111111" },
+  abandoned: { id: "abandoned", name: "Abandonné", color: "#ef6c00" },
+  mixed: { id: "mixed", name: "Mixte", color: "#777777" },
   unknown: { id: "unknown", name: "Non classé", color: "#777777" }
 };
 
@@ -627,11 +637,11 @@ const state = {
   selectedId: null,
   base: "carto",
   currentStepKey: "",
-  currentOverviewKey: "",
+  currentSegmentsKey: "",
   baseLayer: null,
   bisseMarkers: L.layerGroup(),
-  overviewOutlineLayer: null,
-  overviewColorLayer: null,
+  segmentOutlineLayer: null,
+  segmentColorLayer: null,
   photoLayer: L.layerGroup()
 };
 
@@ -691,6 +701,9 @@ map.getPane("segmentOutlinePane").style.zIndex = 405;
 
 map.createPane("segmentColorPane");
 map.getPane("segmentColorPane").style.zIndex = 410;
+
+map.createPane("segmentHitPane");
+map.getPane("segmentHitPane").style.zIndex = 425;
 
 map.createPane("photoPane");
 map.getPane("photoPane").style.zIndex = 430;
@@ -812,9 +825,23 @@ function normalizeStructureType(value) {
   if (["open", "ciel_ouvert", "a_ciel_ouvert", "à_ciel_ouvert"].includes(raw)) return "open";
   if (["canalized", "canalise", "canalise_couvert", "canalized_covered"].includes(raw)) return "canalized";
   if (["abandoned", "abandonne", "abandoned_dry"].includes(raw)) return "abandoned";
+  if (["mixed", "mixte"].includes(raw)) return "mixed";
   if (["unknown", "non_classe", "non_classee"].includes(raw)) return "unknown";
 
   return raw || "unknown";
+}
+
+function isBicolorFeature(feature) {
+  return String(feature?.properties?.display_mode || "").toLowerCase() === "bicolor";
+}
+
+function normalizedStructureTypes(feature) {
+  const p = feature.properties || {};
+  const arr = Array.isArray(p.structure_types) && p.structure_types.length
+    ? p.structure_types
+    : [p.structure_type];
+
+  return arr.map(normalizeStructureType).filter(Boolean);
 }
 
 function selectedPhotos(catalogue) {
@@ -839,15 +866,59 @@ function categories(catalogue) {
   return result;
 }
 
+function categoryForType(type, cats) {
+  const norm = normalizeStructureType(type);
+  return cats[norm] || FALLBACK_CATEGORIES[norm] || { id: norm, name: norm, color: "#777777" };
+}
+
 function categoryFor(feature, cats) {
   const type = normalizeStructureType(feature?.properties?.structure_type);
-  return cats[type] || FALLBACK_CATEGORIES[type] || { id: type, name: type, color: "#777777" };
+  return categoryForType(type, cats);
+}
+
+function bicolorColors(feature, cats) {
+  const p = feature.properties || {};
+  const explicit = Array.isArray(p.bicolor_colors) ? p.bicolor_colors.filter(Boolean) : [];
+
+  if (explicit.length >= 2) {
+    return [explicit[0], explicit[1]];
+  }
+
+  const types = normalizedStructureTypes(feature);
+  const c1 = categoryForType(types[0], cats).color || "#777777";
+  const c2 = categoryForType(types[1], cats).color || "#333333";
+  return [c1, c2];
+}
+
+function segmentDisplayName(feature, cats) {
+  if (isBicolorFeature(feature)) {
+    const names = normalizedStructureTypes(feature)
+      .map((t) => categoryForType(t, cats).name)
+      .filter(Boolean);
+    return names.length ? names.join(" + ") : "Segment mixte";
+  }
+
+  return categoryFor(feature, cats).name || "Segment";
 }
 
 function featureCoords(feature) {
   const g = feature.geometry || {};
   if (g.type === "LineString") return g.coordinates || [];
   if (g.type === "MultiLineString") return (g.coordinates || []).flat();
+  return [];
+}
+
+function latlngPartsFromGeometry(geometry) {
+  if (!geometry) return [];
+
+  if (geometry.type === "LineString") {
+    return [(geometry.coordinates || []).map((c) => [c[1], c[0]])];
+  }
+
+  if (geometry.type === "MultiLineString") {
+    return (geometry.coordinates || []).map((line) => line.map((c) => [c[1], c[0]]));
+  }
+
   return [];
 }
 
@@ -879,14 +950,25 @@ function typesForCurrentZoom() {
   const zoom = map.getZoom();
 
   if (zoom >= SHOW_SEGMENTS_ABANDONED_AT_ZOOM) {
-    return ["open", "canalized", "abandoned"];
+    return ["open", "canalized", "abandoned", "mixed"];
   }
 
   if (zoom >= SHOW_SEGMENTS_OPEN_CANALIZED_AT_ZOOM) {
-    return ["open", "canalized"];
+    return ["open", "canalized", "mixed"];
   }
 
   return [];
+}
+
+function shouldShowFeature(feature, allowedTypes) {
+  if (!allowedTypes.length) return false;
+
+  if (isBicolorFeature(feature)) {
+    return normalizedStructureTypes(feature).some((type) => allowedTypes.includes(type));
+  }
+
+  const type = normalizeStructureType(feature?.properties?.structure_type);
+  return allowedTypes.includes(type);
 }
 
 function refreshMarkerVisibility() {
@@ -906,15 +988,15 @@ function refreshMarkerVisibility() {
   }
 }
 
-function removeOverviewSegments() {
-  if (state.overviewOutlineLayer) {
-    map.removeLayer(state.overviewOutlineLayer);
-    state.overviewOutlineLayer = null;
+function removeVisibleSegments() {
+  if (state.segmentOutlineLayer) {
+    map.removeLayer(state.segmentOutlineLayer);
+    state.segmentOutlineLayer = null;
   }
 
-  if (state.overviewColorLayer) {
-    map.removeLayer(state.overviewColorLayer);
-    state.overviewColorLayer = null;
+  if (state.segmentColorLayer) {
+    map.removeLayer(state.segmentColorLayer);
+    state.segmentColorLayer = null;
   }
 }
 
@@ -927,26 +1009,173 @@ function buildVisibleSegmentsFeatureCollection(dataList, allowedTypes) {
     const bisseTitle = info.title || data.item.title || "Bisse";
 
     for (const feature of data.geojson.features || []) {
-      const type = normalizeStructureType(feature?.properties?.structure_type);
-      if (!allowedTypes.includes(type)) continue;
+      if (!shouldShowFeature(feature, allowedTypes)) continue;
 
-      const cat = categoryFor(feature, cats);
       const cloned = JSON.parse(JSON.stringify(feature));
       cloned.properties = cloned.properties || {};
-      cloned.properties.structure_type = type;
+      cloned.properties.structure_type = normalizeStructureType(cloned.properties.structure_type);
       cloned.properties.__bisse_id = data.item.id;
       cloned.properties.__bisse_title = bisseTitle;
-      cloned.properties.__category_name = cat.name;
-      cloned.properties.__category_color = cat.color;
+      cloned.properties.__category_name = segmentDisplayName(cloned, cats);
+
+      if (isBicolorFeature(cloned)) {
+        cloned.properties.__display_mode = "bicolor";
+        cloned.properties.__bicolor_colors = bicolorColors(cloned, cats);
+      } else {
+        const cat = categoryFor(cloned, cats);
+        cloned.properties.__display_mode = "single";
+        cloned.properties.__category_color = cat.color;
+      }
 
       features.push(cloned);
     }
   }
 
-  return {
-    type: "FeatureCollection",
-    features
-  };
+  return { type: "FeatureCollection", features };
+}
+
+function bindSegmentInteraction(layer, feature) {
+  const title = feature.properties.__bisse_title || "Bisse";
+  const type = feature.properties.__category_name || "Segment";
+
+  layer.bindTooltip(`${escapeHtml(title)} — ${escapeHtml(type)}`, {
+    className: "segment-tooltip",
+    sticky: true
+  });
+
+  layer.on("click", () => {
+    const id = feature.properties.__bisse_id;
+    if (id) {
+      selectBisse(id, { fit: false });
+    }
+
+    const modeLabel = feature.properties.__display_mode === "bicolor" ? "Segment bicolore" : type;
+
+    $("context-content").innerHTML = `
+      <h3>${escapeHtml(modeLabel)}</h3>
+      <div class="context-row">
+        <strong>Bisse</strong>
+        <span>${escapeHtml(title)}</span>
+      </div>
+      <div class="context-row">
+        <strong>Type</strong>
+        <span>${escapeHtml(type)}</span>
+      </div>
+      <div class="context-row">
+        <strong>État de l’eau</strong>
+        <span>${escapeHtml(WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu")}</span>
+      </div>
+    `;
+    openContext();
+  });
+}
+
+function addHaloForPart(layerGroup, latlngs, weight) {
+  if (!latlngs.length) return;
+
+  L.polyline(latlngs, {
+    pane: "segmentOutlinePane",
+    color: "#ffffff",
+    weight,
+    opacity: SEGMENT_STYLE.opacity,
+    lineCap: "round",
+    lineJoin: "round",
+    interactive: false
+  }).addTo(layerGroup);
+}
+
+function addClickTarget(layerGroup, latlngs, feature) {
+  if (!latlngs.length) return;
+
+  const target = L.polyline(latlngs, {
+    pane: "segmentHitPane",
+    color: "#000000",
+    weight: BICOLOR_STYLE.clickWeight,
+    opacity: 0,
+    lineCap: "round",
+    lineJoin: "round",
+    interactive: true
+  }).addTo(layerGroup);
+
+  bindSegmentInteraction(target, feature);
+}
+
+function addSingleSegment(layerGroup, outlineGroup, feature) {
+  const parts = latlngPartsFromGeometry(feature.geometry);
+  const color = feature.properties.__category_color || "#777777";
+
+  for (const latlngs of parts) {
+    addHaloForPart(outlineGroup, latlngs, SEGMENT_STYLE.outlineWeight);
+
+    const line = L.polyline(latlngs, {
+      pane: "segmentColorPane",
+      color,
+      weight: SEGMENT_STYLE.colorWeight,
+      opacity: SEGMENT_STYLE.opacity,
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: true
+    }).addTo(layerGroup);
+
+    bindSegmentInteraction(line, feature);
+    addClickTarget(layerGroup, latlngs, feature);
+  }
+}
+
+function addBicolorSegment(layerGroup, outlineGroup, feature) {
+  const parts = latlngPartsFromGeometry(feature.geometry);
+  const colors = Array.isArray(feature.properties.__bicolor_colors)
+    ? feature.properties.__bicolor_colors
+    : ["#ef6c00", "#111111"];
+
+  const colorA = colors[0] || "#ef6c00";
+  const colorB = colors[1] || "#111111";
+
+  for (const latlngs of parts) {
+    addHaloForPart(outlineGroup, latlngs, BICOLOR_STYLE.outlineWeight);
+
+    const left = L.polyline(latlngs, {
+      pane: "segmentColorPane",
+      color: colorA,
+      weight: BICOLOR_STYLE.flankWeight,
+      opacity: BICOLOR_STYLE.opacity,
+      lineCap: "round",
+      lineJoin: "round",
+      offset: -BICOLOR_STYLE.offset,
+      interactive: true
+    }).addTo(layerGroup);
+
+    const right = L.polyline(latlngs, {
+      pane: "segmentColorPane",
+      color: colorB,
+      weight: BICOLOR_STYLE.flankWeight,
+      opacity: BICOLOR_STYLE.opacity,
+      lineCap: "round",
+      lineJoin: "round",
+      offset: BICOLOR_STYLE.offset,
+      interactive: true
+    }).addTo(layerGroup);
+
+    bindSegmentInteraction(left, feature);
+    bindSegmentInteraction(right, feature);
+    addClickTarget(layerGroup, latlngs, feature);
+  }
+}
+
+function drawVisibleSegments(featureCollection) {
+  const outlineGroup = L.layerGroup();
+  const colorGroup = L.layerGroup();
+
+  for (const feature of featureCollection.features || []) {
+    if (feature.properties.__display_mode === "bicolor") {
+      addBicolorSegment(colorGroup, outlineGroup, feature);
+    } else {
+      addSingleSegment(colorGroup, outlineGroup, feature);
+    }
+  }
+
+  state.segmentOutlineLayer = outlineGroup.addTo(map);
+  state.segmentColorLayer = colorGroup.addTo(map);
 }
 
 async function refreshVisibleSegments() {
@@ -956,19 +1185,19 @@ async function refreshVisibleSegments() {
   const key = `${allowedTypes.join(",")}:${state.index.length}:${state.cache.size}`;
 
   if (!allowedTypes.length) {
-    state.currentOverviewKey = key;
-    removeOverviewSegments();
+    state.currentSegmentsKey = key;
+    removeVisibleSegments();
     updateScalePill(0);
     return;
   }
 
-  if (state.currentOverviewKey === key && state.overviewColorLayer) {
-    updateScalePill(state.overviewColorLayer.getLayers().length);
+  if (state.currentSegmentsKey === key && state.segmentColorLayer) {
+    updateScalePill(state.segmentColorLayer.getLayers().length);
     return;
   }
 
-  state.currentOverviewKey = key;
-  removeOverviewSegments();
+  state.currentSegmentsKey = key;
+  removeVisibleSegments();
 
   const dataList = [];
 
@@ -981,63 +1210,7 @@ async function refreshVisibleSegments() {
   }
 
   const visibleGeojson = buildVisibleSegmentsFeatureCollection(dataList, allowedTypes);
-
-  state.overviewOutlineLayer = L.geoJSON(visibleGeojson, {
-    pane: "segmentOutlinePane",
-    style: {
-      color: "#ffffff",
-      weight: SEGMENT_STYLE.outlineWeight,
-      opacity: SEGMENT_STYLE.opacity,
-      lineCap: "round",
-      lineJoin: "round",
-      interactive: false
-    }
-  }).addTo(map);
-
-  state.overviewColorLayer = L.geoJSON(visibleGeojson, {
-    pane: "segmentColorPane",
-    style: (feature) => ({
-      color: feature.properties.__category_color || "#777777",
-      weight: SEGMENT_STYLE.colorWeight,
-      opacity: SEGMENT_STYLE.opacity,
-      lineCap: "round",
-      lineJoin: "round"
-    }),
-    onEachFeature: (feature, layer) => {
-      const title = feature.properties.__bisse_title || "Bisse";
-      const type = feature.properties.__category_name || "Segment";
-
-      layer.bindTooltip(`${escapeHtml(title)} — ${escapeHtml(type)}`, {
-        className: "segment-tooltip",
-        sticky: true
-      });
-
-      layer.on("click", () => {
-        const id = feature.properties.__bisse_id;
-        if (id) {
-          selectBisse(id, { fit: false });
-        }
-
-        $("context-content").innerHTML = `
-          <h3>${escapeHtml(type)}</h3>
-          <div class="context-row">
-            <strong>Bisse</strong>
-            <span>${escapeHtml(title)}</span>
-          </div>
-          <div class="context-row">
-            <strong>Type</strong>
-            <span>${escapeHtml(type)}</span>
-          </div>
-          <div class="context-row">
-            <strong>État de l’eau</strong>
-            <span>${escapeHtml(WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu")}</span>
-          </div>
-        `;
-        openContext();
-      });
-    }
-  }).addTo(map);
-
+  drawVisibleSegments(visibleGeojson);
   updateScalePill(visibleGeojson.features.length);
 }
 
@@ -1366,7 +1539,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-overview-segments-2026-06-06-c
+bisses-bicolor-polylineoffset-2026-06-07-a
 
 Générer le site :
 python build_bisses.py
@@ -1407,7 +1580,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-overview-segments-2026-06-06-c")
+    print("Version : bisses-bicolor-polylineoffset-2026-06-07-a")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")

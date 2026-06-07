@@ -8,6 +8,11 @@
         "name": "Segment 001",
         "order": 1,
         "structure_type": "open",
+        "structure_types": [
+          "open"
+        ],
+        "display_mode": "single",
+        "bicolor_colors": [],
         "water_status": "unknown",
         "continuous": true
       },
