@@ -465,6 +465,125 @@ h3 {
   background: rgba(150, 62, 48, .08);
 }
 
+
+
+/* Réforme UI : panneau latéral non flottant.
+   La fiche ne recouvre plus la carte : elle réduit la largeur utile de la carte. */
+#app-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#map-region {
+  position: fixed;
+  inset: 0;
+  transition: right .24s ease;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+}
+
+body.side-panel-open #map-region {
+  right: 430px;
+}
+
+body.side-panel-open .topbar {
+  right: 446px;
+}
+
+.side-panel {
+  position: fixed;
+  z-index: 760;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 430px;
+  max-width: min(430px, 42vw);
+  box-sizing: border-box;
+  padding: 24px 24px 28px;
+  border-left: 1px solid rgba(66, 58, 43, .18);
+  background: rgba(255, 250, 241, .98);
+  box-shadow: -18px 0 52px rgba(20, 30, 22, .18);
+  overflow: auto;
+  transform: translateX(100%);
+  transition: transform .24s ease;
+}
+
+body.side-panel-open .side-panel {
+  transform: translateX(0);
+}
+
+.side-panel .close-button {
+  top: 14px;
+  right: 14px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  background: rgba(255, 250, 241, .98);
+  box-shadow: 0 14px 42px rgba(20, 30, 22, .24);
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px;
+  font-family: Candara, "Segoe UI", system-ui, sans-serif;
+  color: #1f2d24;
+}
+
+.map-popup h3 {
+  margin: 0 0 7px;
+  font-size: 1rem;
+}
+
+.map-popup p {
+  margin: 4px 0;
+  line-height: 1.35;
+}
+
+.map-popup .popup-muted {
+  color: #657064;
+  font-size: .88rem;
+}
+
+.map-popup img {
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  border-radius: 12px;
+  margin-bottom: 9px;
+}
+
+@media (max-width: 900px) {
+  body.side-panel-open #map-region {
+    right: 0;
+  }
+
+  body.side-panel-open .topbar {
+    right: 16px;
+  }
+
+  .side-panel {
+    top: auto;
+    left: 0;
+    width: 100vw;
+    max-width: none;
+    height: min(58dvh, 560px);
+    border-left: 0;
+    border-top: 1px solid rgba(66, 58, 43, .18);
+    border-radius: 24px 24px 0 0;
+    transform: translateY(100%);
+  }
+
+  body.side-panel-open .side-panel {
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 760px) {
   .topbar {
     display: block;
