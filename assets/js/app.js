@@ -515,6 +515,25 @@ function boundsWithPhotos(bounds, photos) {
   return bounds;
 }
 
+function fitBisseData(data) {
+  const b = boundsWithPhotos(geoBounds(data.geojson), selectedPhotos(data.catalogue));
+  if (!b.isValid()) return;
+
+  map.invalidateSize({ pan: false });
+  map.fitBounds(b, {
+    paddingTopLeft: [80, 90],
+    paddingBottomRight: [80, 90],
+    maxZoom: MAX_ZOOM
+  });
+}
+
+function fitBisseDataAfterPanel(data) {
+  // Le panneau droit redimensionne la zone de carte avec une transition CSS.
+  // On attend donc la fin du mouvement avant de cadrer le bisse entier.
+  window.setTimeout(() => fitBisseData(data), 300);
+  window.setTimeout(() => fitBisseData(data), 560);
+}
+
 function refreshMarkerVisibility() {
   const tracesMode = roundedZoom() >= SHOW_SYNTHETIC_TRACES_AT_ZOOM;
   const mapEl = $("map");
@@ -610,25 +629,20 @@ function buildDetailedFeatureCollection(dataList) {
 function bindSegmentInteraction(layer, feature) {
   const title = feature.properties.__bisse_title || "Bisse";
   const type = feature.properties.__category_name || "Segment";
-  const water = WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu";
-  const modeLabel = feature.properties.__display_mode === "bicolor" ? "Segment bicolore" : type;
 
   layer.bindTooltip(`${escapeHtml(title)} — ${escapeHtml(type)}`, {
     className: "segment-tooltip",
     sticky: true
   });
 
-  layer.bindPopup(`
-    <div class="map-popup">
-      <h3>${escapeHtml(modeLabel)}</h3>
-      <p><strong>${escapeHtml(title)}</strong></p>
-      <p class="popup-muted">Type : ${escapeHtml(type)}</p>
-      <p class="popup-muted">État de l’eau : ${escapeHtml(water)}</p>
-    </div>
-  `, {
-    maxWidth: 260,
-    autoPan: true,
-    closeButton: true
+  // Clic sur n’importe quelle trace visible = même action qu’une pastille :
+  // ouvrir la fiche du bisse dans le panneau droit et recadrer le bisse entier.
+  layer.on("click", () => {
+    const id = feature.properties.__bisse_id;
+    if (id) {
+      map.closePopup();
+      selectBisse(id, { fit: true });
+    }
   });
 }
 
@@ -1030,10 +1044,7 @@ async function selectBisse(id, options = {}) {
     renderPhotos(data);
 
     if (options.fit !== false) {
-      const b = boundsWithPhotos(geoBounds(data.geojson), selectedPhotos(data.catalogue));
-      if (b.isValid()) {
-        map.fitBounds(b, { padding: [70, 70], maxZoom: MAX_ZOOM });
-      }
+      fitBisseDataAfterPanel(data);
     }
 
     hideStatus();
