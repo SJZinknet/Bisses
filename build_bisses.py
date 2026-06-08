@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-panels-2026-06-08-c"
+# BUILD_VERSION = "bisses-ui-panels-focus-2026-06-08-d"
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-ui-panels-2026-06-08-c</div>
+          <div class="build-version">bisses-ui-panels-focus-2026-06-08-d</div>
         </div>
 
         <div class="toolbar">
@@ -99,6 +99,31 @@ body {
 /* Sécurité : les pastilles disparaissent dès que la carte passe en mode traces. */
 #map.segments-mode .bisse-marker {
   display: none;
+}
+
+/* Supprime les cadres de focus parasites autour des objets Leaflet
+   dans les navigateurs qui donnent le focus aux SVG/paths après clic.
+   Les boutons HTML de l’interface conservent leur focus normal. */
+.leaflet-container,
+.leaflet-container *,
+.leaflet-interactive,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-pane,
+.leaflet-overlay-pane svg,
+.leaflet-overlay-pane path {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.leaflet-container:focus,
+.leaflet-container *:focus,
+.leaflet-interactive:focus,
+.leaflet-marker-icon:focus,
+.leaflet-marker-shadow:focus,
+.leaflet-overlay-pane svg:focus,
+.leaflet-overlay-pane path:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 button {
@@ -687,7 +712,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-panels-2026-06-08-c");
+console.log("Bisses build bisses-ui-panels-focus-2026-06-08-d");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -752,6 +777,39 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+
+function elementWithinLeaflet(el) {
+  let node = el;
+
+  while (node) {
+    if (node.classList && node.classList.contains("leaflet-container")) {
+      return true;
+    }
+    node = node.parentElement || node.parentNode;
+  }
+
+  return false;
+}
+
+function blurIfPossible(el) {
+  if (el && typeof el.blur === "function") {
+    el.blur();
+  }
+}
+
+function clearLeafletFocus() {
+  window.setTimeout(() => {
+    const active = document.activeElement;
+
+    if (elementWithinLeaflet(active)) {
+      blurIfPossible(active);
+    }
+
+    document
+      .querySelectorAll(".leaflet-interactive, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-overlay-pane svg, .leaflet-overlay-pane path")
+      .forEach((el) => blurIfPossible(el));
+  }, 0);
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -1324,6 +1382,8 @@ function bindSegmentInteraction(layer, feature) {
   // Clic sur n’importe quelle trace visible = même action qu’une pastille :
   // ouvrir la fiche du bisse dans le panneau droit et recadrer le bisse entier.
   layer.on("click", () => {
+    clearLeafletFocus();
+
     const id = feature.properties.__bisse_id;
     if (id) {
       map.closePopup();
@@ -1559,7 +1619,10 @@ async function renderMarkers() {
         offset: [0, -10]
       });
 
-      marker.on("click", () => selectBisse(item.id));
+      marker.on("click", () => {
+        clearLeafletFocus();
+        selectBisse(item.id);
+      });
       marker.addTo(state.bisseMarkers);
     } catch (error) {
       console.warn("Bisse non chargé", item, error);
@@ -1612,6 +1675,10 @@ function renderPhotos(data) {
       maxWidth: 230,
       autoPan: true,
       closeButton: true
+    });
+
+    marker.on("click", () => {
+      clearLeafletFocus();
     });
 
     marker.addTo(state.photoLayer);
@@ -1686,6 +1753,8 @@ function renderPanel(data) {
 
   document.querySelectorAll(".photo-card").forEach((btn) => {
     btn.addEventListener("click", () => {
+      clearLeafletFocus();
+
       const photo = photos[Number(btn.dataset.photo)];
       if (!photo) return;
 
@@ -1815,7 +1884,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-panels-2026-06-08-c
+bisses-ui-panels-focus-2026-06-08-d
 
 Générer le site :
 python build_bisses.py
@@ -1856,7 +1925,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-ui-panels-2026-06-08-c")
+    print("Version : bisses-ui-panels-focus-2026-06-08-d")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
