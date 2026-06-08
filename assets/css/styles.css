@@ -38,6 +38,31 @@ body {
   display: none;
 }
 
+/* Supprime les cadres de focus parasites autour des objets Leaflet
+   dans les navigateurs qui donnent le focus aux SVG/paths après clic.
+   Les boutons HTML de l’interface conservent leur focus normal. */
+.leaflet-container,
+.leaflet-container *,
+.leaflet-interactive,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-pane,
+.leaflet-overlay-pane svg,
+.leaflet-overlay-pane path {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.leaflet-container:focus,
+.leaflet-container *:focus,
+.leaflet-interactive:focus,
+.leaflet-marker-icon:focus,
+.leaflet-marker-shadow:focus,
+.leaflet-overlay-pane svg:focus,
+.leaflet-overlay-pane path:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 button {
   font: inherit;
 }

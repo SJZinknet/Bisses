@@ -4,7 +4,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-panels-2026-06-08-c
+bisses-ui-panels-focus-2026-06-08-d
 
 Générer le site :
 python build_bisses.py

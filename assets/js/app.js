@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-panels-2026-06-08-c");
+console.log("Bisses build bisses-ui-panels-focus-2026-06-08-d");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -66,6 +66,39 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+
+function elementWithinLeaflet(el) {
+  let node = el;
+
+  while (node) {
+    if (node.classList && node.classList.contains("leaflet-container")) {
+      return true;
+    }
+    node = node.parentElement || node.parentNode;
+  }
+
+  return false;
+}
+
+function blurIfPossible(el) {
+  if (el && typeof el.blur === "function") {
+    el.blur();
+  }
+}
+
+function clearLeafletFocus() {
+  window.setTimeout(() => {
+    const active = document.activeElement;
+
+    if (elementWithinLeaflet(active)) {
+      blurIfPossible(active);
+    }
+
+    document
+      .querySelectorAll(".leaflet-interactive, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-overlay-pane svg, .leaflet-overlay-pane path")
+      .forEach((el) => blurIfPossible(el));
+  }, 0);
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -638,6 +671,8 @@ function bindSegmentInteraction(layer, feature) {
   // Clic sur n’importe quelle trace visible = même action qu’une pastille :
   // ouvrir la fiche du bisse dans le panneau droit et recadrer le bisse entier.
   layer.on("click", () => {
+    clearLeafletFocus();
+
     const id = feature.properties.__bisse_id;
     if (id) {
       map.closePopup();
@@ -873,7 +908,10 @@ async function renderMarkers() {
         offset: [0, -10]
       });
 
-      marker.on("click", () => selectBisse(item.id));
+      marker.on("click", () => {
+        clearLeafletFocus();
+        selectBisse(item.id);
+      });
       marker.addTo(state.bisseMarkers);
     } catch (error) {
       console.warn("Bisse non chargé", item, error);
@@ -926,6 +964,10 @@ function renderPhotos(data) {
       maxWidth: 230,
       autoPan: true,
       closeButton: true
+    });
+
+    marker.on("click", () => {
+      clearLeafletFocus();
     });
 
     marker.addTo(state.photoLayer);
@@ -1000,6 +1042,8 @@ function renderPanel(data) {
 
   document.querySelectorAll(".photo-card").forEach((btn) => {
     btn.addEventListener("click", () => {
+      clearLeafletFocus();
+
       const photo = photos[Number(btn.dataset.photo)];
       if (!photo) return;
 
