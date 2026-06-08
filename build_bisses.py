@@ -623,11 +623,9 @@ const FALLBACK_CATEGORIES = {
   unknown: { id: "unknown", name: "Non classé", color: "#777777" }
 };
 
-// Décision métier : un segment bicolore est toujours canalized + abandoned.
-// Avant le rendu bicolore détaillé (z25+), il est simplifié en noir,
-// car le caractère canalisé prime sur le caractère abandonné.
+// Décision métier : un segment bicolore est toujours canalisé + abandonné.
+// En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
-const BICOLOR_SIMPLIFIED_NAME = "Canalisé + abandonné";
 
 const state = {
   index: [],
@@ -1158,7 +1156,7 @@ function buildDetailedFeatureCollection(dataList) {
       if (isBicolorFeature(cloned)) {
         const bstyle = bicolorStyleForZoom();
 
-        if (bstyle.mode === "split") {
+              if (bstyle.mode === "split") {
           cloned.properties.__display_mode = "bicolor";
           cloned.properties.__bicolor_colors = bicolorColors(cloned, cats);
         } else {
