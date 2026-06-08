@@ -634,6 +634,7 @@ const state = {
   base: "carto",
   currentStepKey: "",
   currentSegmentsKey: "",
+  segmentRefreshToken: 0,
   baseLayer: null,
   bisseMarkers: L.layerGroup(),
   segmentOutlineLayer: null,
@@ -1319,10 +1320,14 @@ function drawVisibleSegments(featureCollection) {
 async function refreshVisibleSegments() {
   refreshMarkerVisibility();
 
+  const token = state.segmentRefreshToken + 1;
+  state.segmentRefreshToken = token;
+
   const mode = segmentRenderMode();
   const style = segmentStyleForZoom();
   const bstyle = bicolorStyleForZoom();
-  const key = `${mode}:${style.key}:${bstyle.mode}:${roundedZoom()}:${state.index.length}:${state.cache.size}`;
+  const zoom = roundedZoom();
+  const key = `${mode}:${style.key}:${bstyle.mode}:${zoom}:${state.index.length}:${state.cache.size}`;
 
   if (mode === "markers") {
     state.currentSegmentsKey = key;
@@ -1348,11 +1353,23 @@ async function refreshVisibleSegments() {
     } catch (error) {
       console.warn("Bisse non chargé pour la vue segments", item, error);
     }
+
+    if (token !== state.segmentRefreshToken) {
+      return;
+    }
+  }
+
+  if (token !== state.segmentRefreshToken || segmentRenderMode() !== mode) {
+    return;
   }
 
   const visibleGeojson = mode === "synthetic"
     ? buildSyntheticFeatureCollection(dataList)
     : buildDetailedFeatureCollection(dataList);
+
+  if (token !== state.segmentRefreshToken || segmentRenderMode() !== mode) {
+    return;
+  }
 
   drawVisibleSegments(visibleGeojson);
 
@@ -1619,8 +1636,9 @@ function resetValais() {
   $("panel-content").innerHTML = `
     <p class="muted">
       Cliquez sur une pastille pour afficher un bisse.
-      Les tracés synthétiques apparaissent à partir du zoom 19 ;
-      les segments détaillés apparaissent à partir du zoom 20.
+      Les tracés synthétiques apparaissent à partir du zoom ${SHOW_SYNTHETIC_TRACES_AT_ZOOM} ;
+      les segments détaillés apparaissent à partir du zoom ${SHOW_DETAILED_SEGMENTS_AT_ZOOM}.
+      Les segments bicolores complets apparaissent à partir du zoom ${SHOW_BICOLOR_SPLIT_AT_ZOOM}.
     </p>
   `;
 
