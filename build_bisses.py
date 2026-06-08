@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-generalized-zoom-2026-06-08-b"
+# BUILD_VERSION = "bisses-ui-panels-2026-06-08-c"
 
 from __future__ import annotations
 
@@ -19,49 +19,38 @@ INDEX_HTML = r"""<!doctype html>
 </head>
 
 <body>
-  <div id="map"></div>
+  <div id="app-shell">
+    <main id="map-region" aria-label="Carte des bisses du Valais">
+      <div id="map"></div>
 
-  <header class="topbar">
-    <div class="brand">
-      <div class="eyebrow">Inventaire cartographique</div>
-      <h1>Bisses du Valais</h1>
-      <div class="build-version">bisses-generalized-zoom-2026-06-08-b</div>
-    </div>
+      <header class="topbar">
+        <div class="brand">
+          <div class="eyebrow">Inventaire cartographique</div>
+          <h1>Bisses du Valais</h1>
+          <div class="build-version">bisses-ui-panels-2026-06-08-c</div>
+        </div>
 
-    <div class="toolbar">
-      <button id="btn-valais" type="button">Vue Valais</button>
-      <button id="btn-list" type="button">Liste</button>
-      <button id="btn-basemap" type="button">Satellite</button>
-    </div>
-  </header>
+        <div class="toolbar">
+          <button id="btn-valais" type="button">Vue Valais</button>
+          <button id="btn-list" type="button">Liste</button>
+          <button id="btn-basemap" type="button">Satellite</button>
+        </div>
+      </header>
 
-  <aside id="bisse-panel" class="panel panel-main">
-    <button id="btn-close-panel" class="close-button" type="button" aria-label="Fermer">×</button>
-    <div class="panel-kicker">Bisse sélectionné</div>
-    <h2 id="panel-title">Bisses du Valais</h2>
-    <div id="panel-content">
-      <p class="muted">Cliquez sur une pastille pour afficher un bisse.</p>
-    </div>
-  </aside>
+      <div id="legend" class="legend"></div>
+      <div id="scale-pill" class="scale-pill">Fond carte</div>
+      <div id="status-pill" class="status-pill">Chargement…</div>
+    </main>
 
-  <aside id="context-panel" class="panel panel-context">
-    <button id="btn-close-context" class="close-button" type="button" aria-label="Fermer">×</button>
-    <div class="panel-kicker">Détail</div>
-    <div id="context-content">
-      <p class="muted">Cliquez sur une trace ou une photo.</p>
-    </div>
-  </aside>
-
-  <aside id="list-panel" class="panel panel-list">
-    <button id="btn-close-list" class="close-button" type="button" aria-label="Fermer">×</button>
-    <div class="panel-kicker">Vue alternative</div>
-    <h2>Liste des bisses</h2>
-    <div id="bisse-list"></div>
-  </aside>
-
-  <div id="legend" class="legend"></div>
-  <div id="scale-pill" class="scale-pill">Fond carte</div>
-  <div id="status-pill" class="status-pill">Chargement…</div>
+    <aside id="side-panel" class="side-panel" aria-label="Informations">
+      <button id="btn-close-panel" class="close-button" type="button" aria-label="Fermer">×</button>
+      <div class="panel-kicker" id="panel-kicker">Fiche bisse</div>
+      <h2 id="panel-title">Bisses du Valais</h2>
+      <div id="panel-content">
+        <p class="muted">Sélectionnez un bisse pour afficher sa fiche.</p>
+      </div>
+    </aside>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-tilelayer-swiss@2.4.0/dist/Leaflet.TileLayer.Swiss.umd.js"></script>
@@ -539,6 +528,125 @@ h3 {
   background: rgba(150, 62, 48, .08);
 }
 
+
+
+/* Réforme UI : panneau latéral non flottant.
+   La fiche ne recouvre plus la carte : elle réduit la largeur utile de la carte. */
+#app-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#map-region {
+  position: fixed;
+  inset: 0;
+  transition: right .24s ease;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+}
+
+body.side-panel-open #map-region {
+  right: 430px;
+}
+
+body.side-panel-open .topbar {
+  right: 446px;
+}
+
+.side-panel {
+  position: fixed;
+  z-index: 760;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 430px;
+  max-width: min(430px, 42vw);
+  box-sizing: border-box;
+  padding: 24px 24px 28px;
+  border-left: 1px solid rgba(66, 58, 43, .18);
+  background: rgba(255, 250, 241, .98);
+  box-shadow: -18px 0 52px rgba(20, 30, 22, .18);
+  overflow: auto;
+  transform: translateX(100%);
+  transition: transform .24s ease;
+}
+
+body.side-panel-open .side-panel {
+  transform: translateX(0);
+}
+
+.side-panel .close-button {
+  top: 14px;
+  right: 14px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  background: rgba(255, 250, 241, .98);
+  box-shadow: 0 14px 42px rgba(20, 30, 22, .24);
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px;
+  font-family: Candara, "Segoe UI", system-ui, sans-serif;
+  color: #1f2d24;
+}
+
+.map-popup h3 {
+  margin: 0 0 7px;
+  font-size: 1rem;
+}
+
+.map-popup p {
+  margin: 4px 0;
+  line-height: 1.35;
+}
+
+.map-popup .popup-muted {
+  color: #657064;
+  font-size: .88rem;
+}
+
+.map-popup img {
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  border-radius: 12px;
+  margin-bottom: 9px;
+}
+
+@media (max-width: 900px) {
+  body.side-panel-open #map-region {
+    right: 0;
+  }
+
+  body.side-panel-open .topbar {
+    right: 16px;
+  }
+
+  .side-panel {
+    top: auto;
+    left: 0;
+    width: 100vw;
+    max-width: none;
+    height: min(58dvh, 560px);
+    border-left: 0;
+    border-top: 1px solid rgba(66, 58, 43, .18);
+    border-radius: 24px 24px 0 0;
+    transform: translateY(100%);
+  }
+
+  body.side-panel-open .side-panel {
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 760px) {
   .topbar {
     display: block;
@@ -579,7 +687,7 @@ h3 {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-generalized-zoom-2026-06-08-b");
+console.log("Bisses build bisses-ui-panels-2026-06-08-c");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -635,6 +743,7 @@ const state = {
   currentStepKey: "",
   currentSegmentsKey: "",
   segmentRefreshToken: 0,
+  listHtml: "",
   baseLayer: null,
   bisseMarkers: L.layerGroup(),
   segmentOutlineLayer: null,
@@ -836,28 +945,41 @@ function updateScalePill(count = null, unit = "segments") {
   showScale(`${step.label} · z${zoom}${extra}`);
 }
 
+function invalidateMapSoon() {
+  map.invalidateSize({ pan: false });
+  window.setTimeout(() => map.invalidateSize({ pan: false }), 260);
+}
+
 function openPanel() {
-  $("bisse-panel").classList.add("is-open");
+  document.body.classList.add("side-panel-open");
+  $("side-panel").classList.add("is-open");
+  invalidateMapSoon();
 }
 
 function closePanel() {
-  $("bisse-panel").classList.remove("is-open");
+  document.body.classList.remove("side-panel-open");
+  $("side-panel").classList.remove("is-open");
+  invalidateMapSoon();
 }
 
 function openContext() {
-  $("context-panel").classList.add("is-open");
+  // Ancien panneau contextuel supprimé : les détails courts passent par des popups Leaflet.
 }
 
 function closeContext() {
-  $("context-panel").classList.remove("is-open");
+  map.closePopup();
 }
 
 function openList() {
-  $("list-panel").classList.add("is-open");
+  $("panel-kicker").textContent = "Vue alternative";
+  $("panel-title").textContent = "Liste des bisses";
+  $("panel-content").innerHTML = state.listHtml || `<p class="muted">Aucun bisse chargé.</p>`;
+  bindListButtons();
+  openPanel();
 }
 
 function closeList() {
-  $("list-panel").classList.remove("is-open");
+  closePanel();
 }
 
 function cataloguePath(item) {
@@ -1174,36 +1296,25 @@ function buildDetailedFeatureCollection(dataList) {
 function bindSegmentInteraction(layer, feature) {
   const title = feature.properties.__bisse_title || "Bisse";
   const type = feature.properties.__category_name || "Segment";
+  const water = WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu";
+  const modeLabel = feature.properties.__display_mode === "bicolor" ? "Segment bicolore" : type;
 
   layer.bindTooltip(`${escapeHtml(title)} — ${escapeHtml(type)}`, {
     className: "segment-tooltip",
     sticky: true
   });
 
-  layer.on("click", () => {
-    const id = feature.properties.__bisse_id;
-    if (id) {
-      selectBisse(id, { fit: false });
-    }
-
-    const modeLabel = feature.properties.__display_mode === "bicolor" ? "Segment bicolore" : type;
-
-    $("context-content").innerHTML = `
+  layer.bindPopup(`
+    <div class="map-popup">
       <h3>${escapeHtml(modeLabel)}</h3>
-      <div class="context-row">
-        <strong>Bisse</strong>
-        <span>${escapeHtml(title)}</span>
-      </div>
-      <div class="context-row">
-        <strong>Type</strong>
-        <span>${escapeHtml(type)}</span>
-      </div>
-      <div class="context-row">
-        <strong>État de l’eau</strong>
-        <span>${escapeHtml(WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu")}</span>
-      </div>
-    `;
-    openContext();
+      <p><strong>${escapeHtml(title)}</strong></p>
+      <p class="popup-muted">Type : ${escapeHtml(type)}</p>
+      <p class="popup-muted">État de l’eau : ${escapeHtml(water)}</p>
+    </div>
+  `, {
+    maxWidth: 260,
+    autoPan: true,
+    closeButton: true
   });
 }
 
@@ -1395,20 +1506,21 @@ function photoIcon() {
   });
 }
 
+function bindListButtons() {
+  document.querySelectorAll(".bisse-button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectBisse(btn.dataset.id);
+    });
+  });
+}
+
 function renderList() {
-  $("bisse-list").innerHTML = state.index.map((item) => `
+  state.listHtml = state.index.map((item) => `
     <button class="bisse-button" type="button" data-id="${escapeHtml(item.id)}">
       <strong>${escapeHtml(item.title || item.id)}</strong>
       <span>${escapeHtml([item.region, item.commune].filter(Boolean).join(" · "))}</span>
     </button>
   `).join("");
-
-  document.querySelectorAll(".bisse-button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      selectBisse(btn.dataset.id);
-      closeList();
-    });
-  });
 }
 
 async function renderMarkers() {
@@ -1476,18 +1588,16 @@ function renderPhotos(data) {
       offset: [0, -8]
     });
 
-    marker.on("click", () => {
-      $("context-content").innerHTML = `
-        ${photo.filename_web ? `<img class="context-photo" src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
+    marker.bindPopup(`
+      <div class="map-popup">
+        ${photo.filename_web ? `<img src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
         <h3>${escapeHtml(photo.title || "Photo")}</h3>
-        ${photo.description ? `
-          <div class="context-row">
-            <strong>Description</strong>
-            <span>${escapeHtml(photo.description)}</span>
-          </div>
-        ` : ""}
-      `;
-      openContext();
+        ${photo.description ? `<p class="popup-muted">${escapeHtml(photo.description)}</p>` : ""}
+      </div>
+    `, {
+      maxWidth: 230,
+      autoPan: true,
+      closeButton: true
     });
 
     marker.addTo(state.photoLayer);
@@ -1515,6 +1625,7 @@ function renderPanel(data) {
   const info = data.catalogue.bisse_info || {};
   const photos = selectedPhotos(data.catalogue);
 
+  $("panel-kicker").textContent = "Fiche bisse";
   $("panel-title").textContent = info.title || data.item.title || "Bisse";
 
   $("panel-content").innerHTML = `
@@ -1572,17 +1683,18 @@ function renderPanel(data) {
         );
       }
 
-      $("context-content").innerHTML = `
-        ${photo.filename_web ? `<img class="context-photo" src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
-        <h3>${escapeHtml(photo.title || "Photo")}</h3>
-        ${photo.description ? `
-          <div class="context-row">
-            <strong>Description</strong>
-            <span>${escapeHtml(photo.description)}</span>
-          </div>
-        ` : ""}
-      `;
-      openContext();
+      if (isNum(photo.lat) && isNum(photo.lon)) {
+        L.popup({ maxWidth: 230, autoPan: true, closeButton: true })
+          .setLatLng([photo.lat, photo.lon])
+          .setContent(`
+            <div class="map-popup">
+              ${photo.filename_web ? `<img src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
+              <h3>${escapeHtml(photo.title || "Photo")}</h3>
+              ${photo.description ? `<p class="popup-muted">${escapeHtml(photo.description)}</p>` : ""}
+            </div>
+          `)
+          .openOn(map);
+      }
     });
   });
 
@@ -1629,20 +1741,9 @@ function resetValais() {
   state.selectedId = null;
   clearSelectedPhotosAndLegend();
   closeContext();
+  closePanel();
 
   map.setView(VALAIS_CENTER, VALAIS_ZOOM);
-
-  $("panel-title").textContent = "Bisses du Valais";
-  $("panel-content").innerHTML = `
-    <p class="muted">
-      Cliquez sur une pastille pour afficher un bisse.
-      Les tracés synthétiques apparaissent à partir du zoom ${SHOW_SYNTHETIC_TRACES_AT_ZOOM} ;
-      les segments détaillés apparaissent à partir du zoom ${SHOW_DETAILED_SEGMENTS_AT_ZOOM}.
-      Les segments bicolores complets apparaissent à partir du zoom ${SHOW_BICOLOR_SPLIT_AT_ZOOM}.
-    </p>
-  `;
-
-  openPanel();
   refreshVisibleSegments();
 }
 
@@ -1688,9 +1789,7 @@ map.on("zoomend", () => {
 $("btn-basemap").addEventListener("click", toggleBase);
 $("btn-valais").addEventListener("click", resetValais);
 $("btn-list").addEventListener("click", openList);
-$("btn-close-list").addEventListener("click", closeList);
 $("btn-close-panel").addEventListener("click", closePanel);
-$("btn-close-context").addEventListener("click", closeContext);
 
 map.setView(VALAIS_CENTER, VALAIS_ZOOM);
 refreshBaseLayer();
@@ -1705,7 +1804,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-generalized-zoom-2026-06-08-b
+bisses-ui-panels-2026-06-08-c
 
 Générer le site :
 python build_bisses.py
@@ -1746,7 +1845,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-generalized-zoom-2026-06-08-b")
+    print("Version : bisses-ui-panels-2026-06-08-c")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
