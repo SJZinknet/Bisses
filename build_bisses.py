@@ -623,6 +623,12 @@ const FALLBACK_CATEGORIES = {
   unknown: { id: "unknown", name: "Non classé", color: "#777777" }
 };
 
+// Décision métier : un segment bicolore est toujours canalized + abandoned.
+// Avant le rendu bicolore détaillé (z25+), il est simplifié en noir,
+// car le caractère canalisé prime sur le caractère abandonné.
+const BICOLOR_SIMPLIFIED_COLOR = "#111111";
+const BICOLOR_SIMPLIFIED_NAME = "Canalisé + abandonné";
+
 const state = {
   index: [],
   cache: new Map(),
@@ -1114,11 +1120,17 @@ function buildSyntheticFeatureCollection(dataList) {
     for (const feature of data.geojson.features || []) {
       const cloned = JSON.parse(JSON.stringify(feature));
       cloned.properties = cloned.properties || {};
+      const simplifiedBicolor = isBicolorFeature(cloned);
+
       cloned.properties.__display_mode = "synthetic";
       cloned.properties.__bisse_id = data.item.id;
       cloned.properties.__bisse_title = bisseTitle;
-      cloned.properties.__category_name = dominant.name || "Tracé synthétique";
-      cloned.properties.__category_color = dominant.color || "#1e88e5";
+      cloned.properties.__category_name = simplifiedBicolor
+        ? BICOLOR_SIMPLIFIED_NAME
+        : (dominant.name || "Tracé synthétique");
+      cloned.properties.__category_color = simplifiedBicolor
+        ? BICOLOR_SIMPLIFIED_COLOR
+        : (dominant.color || "#1e88e5");
       features.push(cloned);
     }
   }
@@ -1151,7 +1163,7 @@ function buildDetailedFeatureCollection(dataList) {
           cloned.properties.__bicolor_colors = bicolorColors(cloned, cats);
         } else {
           cloned.properties.__display_mode = "single";
-          cloned.properties.__category_color = dominant.color || bicolorColors(cloned, cats)[0] || "#777777";
+          cloned.properties.__category_color = BICOLOR_SIMPLIFIED_COLOR;
         }
       } else {
         const cat = categoryFor(cloned, cats);
