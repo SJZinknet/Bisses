@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-generalized-zoom-2026-06-08-a"
+# BUILD_VERSION = "bisses-generalized-zoom-2026-06-08-b"
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ INDEX_HTML = r"""<!doctype html>
     <div class="brand">
       <div class="eyebrow">Inventaire cartographique</div>
       <h1>Bisses du Valais</h1>
-      <div class="build-version">bisses-generalized-zoom-2026-06-08-a</div>
+      <div class="build-version">bisses-generalized-zoom-2026-06-08-b</div>
     </div>
 
     <div class="toolbar">
@@ -579,7 +579,7 @@ h3 {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-generalized-zoom-2026-06-08-a");
+console.log("Bisses build bisses-generalized-zoom-2026-06-08-b");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -587,8 +587,8 @@ const MIN_ZOOM = 16;
 const MAX_ZOOM = 26;
 
 const SHOW_SYNTHETIC_TRACES_AT_ZOOM = 19;
-const SHOW_DETAILED_SEGMENTS_AT_ZOOM = 20.5;
-const SHOW_BICOLOR_SPLIT_AT_ZOOM = 25;
+const SHOW_DETAILED_SEGMENTS_AT_ZOOM = 20;
+const SHOW_BICOLOR_SPLIT_AT_ZOOM = 24.5;
 
 const MAP_SCALE_STEPS = [
   { min: 16, max: 16.5, label: "CN 1:1 million", layer: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale", format: "jpeg", maxNativeZoom: 26, muted: false },
@@ -1118,17 +1118,11 @@ function buildSyntheticFeatureCollection(dataList) {
     for (const feature of data.geojson.features || []) {
       const cloned = JSON.parse(JSON.stringify(feature));
       cloned.properties = cloned.properties || {};
-      const simplifiedBicolor = isBicolorFeature(cloned);
-
       cloned.properties.__display_mode = "synthetic";
       cloned.properties.__bisse_id = data.item.id;
       cloned.properties.__bisse_title = bisseTitle;
-      cloned.properties.__category_name = simplifiedBicolor
-        ? BICOLOR_SIMPLIFIED_NAME
-        : (dominant.name || "Tracé synthétique");
-      cloned.properties.__category_color = simplifiedBicolor
-        ? BICOLOR_SIMPLIFIED_COLOR
-        : (dominant.color || "#1e88e5");
+      cloned.properties.__category_name = dominant.name || "Tracé synthétique";
+      cloned.properties.__category_color = dominant.color || "#1e88e5";
       features.push(cloned);
     }
   }
@@ -1156,7 +1150,7 @@ function buildDetailedFeatureCollection(dataList) {
       if (isBicolorFeature(cloned)) {
         const bstyle = bicolorStyleForZoom();
 
-              if (bstyle.mode === "split") {
+        if (bstyle.mode === "split") {
           cloned.properties.__display_mode = "bicolor";
           cloned.properties.__bicolor_colors = bicolorColors(cloned, cats);
         } else {
@@ -1626,7 +1620,7 @@ function resetValais() {
     <p class="muted">
       Cliquez sur une pastille pour afficher un bisse.
       Les tracés synthétiques apparaissent à partir du zoom 19 ;
-      les segments détaillés apparaissent à partir du zoom 20.5.
+      les segments détaillés apparaissent à partir du zoom 20.
     </p>
   `;
 
@@ -1693,7 +1687,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-generalized-zoom-2026-06-08-a
+bisses-generalized-zoom-2026-06-08-b
 
 Générer le site :
 python build_bisses.py
@@ -1734,7 +1728,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-generalized-zoom-2026-06-08-a")
+    print("Version : bisses-generalized-zoom-2026-06-08-b")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
