@@ -3,7 +3,7 @@
     "id": "bisse-de-clavau",
     "title": "Bisse de Clavau",
     "region": "Liène",
-    "commune": "Ayent",
+    "commune": "Ayent, Grimisuat, Sion",
     "catalogue": "data/bisses/bisse-de-clavau/catalogue.json",
     "segments": "data/bisses/bisse-de-clavau/segments.geojson"
   },
@@ -11,7 +11,7 @@
     "id": "bisse-de-lentine",
     "title": "Bisse de Lentine",
     "region": "Sionne",
-    "commune": "Savièse",
+    "commune": "Savièse, Sion",
     "catalogue": "data/bisses/bisse-de-lentine/catalogue.json",
     "segments": "data/bisses/bisse-de-lentine/segments.geojson"
   },
