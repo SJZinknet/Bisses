@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-generalized-zoom-2026-06-08-b");
+console.log("Bisses build bisses-ui-panels-2026-06-08-c");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -57,6 +57,7 @@ const state = {
   currentStepKey: "",
   currentSegmentsKey: "",
   segmentRefreshToken: 0,
+  listHtml: "",
   baseLayer: null,
   bisseMarkers: L.layerGroup(),
   segmentOutlineLayer: null,
@@ -258,28 +259,41 @@ function updateScalePill(count = null, unit = "segments") {
   showScale(`${step.label} · z${zoom}${extra}`);
 }
 
+function invalidateMapSoon() {
+  map.invalidateSize({ pan: false });
+  window.setTimeout(() => map.invalidateSize({ pan: false }), 260);
+}
+
 function openPanel() {
-  $("bisse-panel").classList.add("is-open");
+  document.body.classList.add("side-panel-open");
+  $("side-panel").classList.add("is-open");
+  invalidateMapSoon();
 }
 
 function closePanel() {
-  $("bisse-panel").classList.remove("is-open");
+  document.body.classList.remove("side-panel-open");
+  $("side-panel").classList.remove("is-open");
+  invalidateMapSoon();
 }
 
 function openContext() {
-  $("context-panel").classList.add("is-open");
+  // Ancien panneau contextuel supprimé : les détails courts passent par des popups Leaflet.
 }
 
 function closeContext() {
-  $("context-panel").classList.remove("is-open");
+  map.closePopup();
 }
 
 function openList() {
-  $("list-panel").classList.add("is-open");
+  $("panel-kicker").textContent = "Vue alternative";
+  $("panel-title").textContent = "Liste des bisses";
+  $("panel-content").innerHTML = state.listHtml || `<p class="muted">Aucun bisse chargé.</p>`;
+  bindListButtons();
+  openPanel();
 }
 
 function closeList() {
-  $("list-panel").classList.remove("is-open");
+  closePanel();
 }
 
 function cataloguePath(item) {
@@ -596,36 +610,25 @@ function buildDetailedFeatureCollection(dataList) {
 function bindSegmentInteraction(layer, feature) {
   const title = feature.properties.__bisse_title || "Bisse";
   const type = feature.properties.__category_name || "Segment";
+  const water = WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu";
+  const modeLabel = feature.properties.__display_mode === "bicolor" ? "Segment bicolore" : type;
 
   layer.bindTooltip(`${escapeHtml(title)} — ${escapeHtml(type)}`, {
     className: "segment-tooltip",
     sticky: true
   });
 
-  layer.on("click", () => {
-    const id = feature.properties.__bisse_id;
-    if (id) {
-      selectBisse(id, { fit: false });
-    }
-
-    const modeLabel = feature.properties.__display_mode === "bicolor" ? "Segment bicolore" : type;
-
-    $("context-content").innerHTML = `
+  layer.bindPopup(`
+    <div class="map-popup">
       <h3>${escapeHtml(modeLabel)}</h3>
-      <div class="context-row">
-        <strong>Bisse</strong>
-        <span>${escapeHtml(title)}</span>
-      </div>
-      <div class="context-row">
-        <strong>Type</strong>
-        <span>${escapeHtml(type)}</span>
-      </div>
-      <div class="context-row">
-        <strong>État de l’eau</strong>
-        <span>${escapeHtml(WATER_LABELS[feature.properties.water_status] || feature.properties.water_status || "inconnu")}</span>
-      </div>
-    `;
-    openContext();
+      <p><strong>${escapeHtml(title)}</strong></p>
+      <p class="popup-muted">Type : ${escapeHtml(type)}</p>
+      <p class="popup-muted">État de l’eau : ${escapeHtml(water)}</p>
+    </div>
+  `, {
+    maxWidth: 260,
+    autoPan: true,
+    closeButton: true
   });
 }
 
@@ -817,20 +820,21 @@ function photoIcon() {
   });
 }
 
+function bindListButtons() {
+  document.querySelectorAll(".bisse-button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectBisse(btn.dataset.id);
+    });
+  });
+}
+
 function renderList() {
-  $("bisse-list").innerHTML = state.index.map((item) => `
+  state.listHtml = state.index.map((item) => `
     <button class="bisse-button" type="button" data-id="${escapeHtml(item.id)}">
       <strong>${escapeHtml(item.title || item.id)}</strong>
       <span>${escapeHtml([item.region, item.commune].filter(Boolean).join(" · "))}</span>
     </button>
   `).join("");
-
-  document.querySelectorAll(".bisse-button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      selectBisse(btn.dataset.id);
-      closeList();
-    });
-  });
 }
 
 async function renderMarkers() {
@@ -898,18 +902,16 @@ function renderPhotos(data) {
       offset: [0, -8]
     });
 
-    marker.on("click", () => {
-      $("context-content").innerHTML = `
-        ${photo.filename_web ? `<img class="context-photo" src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
+    marker.bindPopup(`
+      <div class="map-popup">
+        ${photo.filename_web ? `<img src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
         <h3>${escapeHtml(photo.title || "Photo")}</h3>
-        ${photo.description ? `
-          <div class="context-row">
-            <strong>Description</strong>
-            <span>${escapeHtml(photo.description)}</span>
-          </div>
-        ` : ""}
-      `;
-      openContext();
+        ${photo.description ? `<p class="popup-muted">${escapeHtml(photo.description)}</p>` : ""}
+      </div>
+    `, {
+      maxWidth: 230,
+      autoPan: true,
+      closeButton: true
     });
 
     marker.addTo(state.photoLayer);
@@ -937,6 +939,7 @@ function renderPanel(data) {
   const info = data.catalogue.bisse_info || {};
   const photos = selectedPhotos(data.catalogue);
 
+  $("panel-kicker").textContent = "Fiche bisse";
   $("panel-title").textContent = info.title || data.item.title || "Bisse";
 
   $("panel-content").innerHTML = `
@@ -994,17 +997,18 @@ function renderPanel(data) {
         );
       }
 
-      $("context-content").innerHTML = `
-        ${photo.filename_web ? `<img class="context-photo" src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
-        <h3>${escapeHtml(photo.title || "Photo")}</h3>
-        ${photo.description ? `
-          <div class="context-row">
-            <strong>Description</strong>
-            <span>${escapeHtml(photo.description)}</span>
-          </div>
-        ` : ""}
-      `;
-      openContext();
+      if (isNum(photo.lat) && isNum(photo.lon)) {
+        L.popup({ maxWidth: 230, autoPan: true, closeButton: true })
+          .setLatLng([photo.lat, photo.lon])
+          .setContent(`
+            <div class="map-popup">
+              ${photo.filename_web ? `<img src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
+              <h3>${escapeHtml(photo.title || "Photo")}</h3>
+              ${photo.description ? `<p class="popup-muted">${escapeHtml(photo.description)}</p>` : ""}
+            </div>
+          `)
+          .openOn(map);
+      }
     });
   });
 
@@ -1051,20 +1055,9 @@ function resetValais() {
   state.selectedId = null;
   clearSelectedPhotosAndLegend();
   closeContext();
+  closePanel();
 
   map.setView(VALAIS_CENTER, VALAIS_ZOOM);
-
-  $("panel-title").textContent = "Bisses du Valais";
-  $("panel-content").innerHTML = `
-    <p class="muted">
-      Cliquez sur une pastille pour afficher un bisse.
-      Les tracés synthétiques apparaissent à partir du zoom ${SHOW_SYNTHETIC_TRACES_AT_ZOOM} ;
-      les segments détaillés apparaissent à partir du zoom ${SHOW_DETAILED_SEGMENTS_AT_ZOOM}.
-      Les segments bicolores complets apparaissent à partir du zoom ${SHOW_BICOLOR_SPLIT_AT_ZOOM}.
-    </p>
-  `;
-
-  openPanel();
   refreshVisibleSegments();
 }
 
@@ -1110,9 +1103,7 @@ map.on("zoomend", () => {
 $("btn-basemap").addEventListener("click", toggleBase);
 $("btn-valais").addEventListener("click", resetValais);
 $("btn-list").addEventListener("click", openList);
-$("btn-close-list").addEventListener("click", closeList);
 $("btn-close-panel").addEventListener("click", closePanel);
-$("btn-close-context").addEventListener("click", closeContext);
 
 map.setView(VALAIS_CENTER, VALAIS_ZOOM);
 refreshBaseLayer();
