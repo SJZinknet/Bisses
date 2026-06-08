@@ -16,50 +16,50 @@
     "segments": "data/bisses/bisse-de-lentine/segments.geojson"
   },
   {
-    "id": "salins",
-    "title": "Bisse de Salins",
-    "region": "Nendaz",
-    "commune": "Nendaz",
-    "catalogue": "data/bisses/salins/catalogue.json",
-    "segments": "data/bisses/salins/segments.geojson"
-  },
-  {
     "id": "bisse-de-st-luc",
-    "title": "Bisse de St-Luc",
+    "title": "Bisse de Saint-Luc",
     "region": "Anniviers",
     "commune": "Anniviers",
     "catalogue": "data/bisses/bisse-de-st-luc/catalogue.json",
     "segments": "data/bisses/bisse-de-st-luc/segments.geojson"
   },
   {
-    "id": "bisse-de-st-martin",
-    "title": "Bisse de St. Martin",
+    "id": "bisse-de-saint-martin",
+    "title": "Bisse de Saint-Martin",
     "region": "Hérens",
-    "commune": "St. Martin",
-    "catalogue": "data/bisses/bisse-de-st-martin/catalogue.json",
-    "segments": "data/bisses/bisse-de-st-martin/segments.geojson"
+    "commune": "Saint-Martin",
+    "catalogue": "data/bisses/bisse-de-saint-martin/catalogue.json",
+    "segments": "data/bisses/bisse-de-saint-martin/segments.geojson"
+  },
+  {
+    "id": "bisse-de-salins",
+    "title": "Bisse de Salins",
+    "region": "Nendaz",
+    "commune": "Nendaz, Sion",
+    "catalogue": "data/bisses/bisse-de-salins/catalogue.json",
+    "segments": "data/bisses/bisse-de-salins/segments.geojson"
   },
   {
     "id": "tsa-creta",
-    "title": "Bisse de Tsa Crêta",
+    "title": "Bisse de Tsa-Crêta",
     "region": "Hérens",
     "commune": "Mont-Noble",
     "catalogue": "data/bisses/tsa-creta/catalogue.json",
     "segments": "data/bisses/tsa-creta/segments.geojson"
   },
   {
-    "id": "tsittoret",
+    "id": "bisse-de-tsittoret",
     "title": "Bisse de Tsittoret",
     "region": "Raspille",
-    "commune": "",
-    "catalogue": "data/bisses/tsittoret/catalogue.json",
-    "segments": "data/bisses/tsittoret/segments.geojson"
+    "commune": "Crans-Montana",
+    "catalogue": "data/bisses/bisse-de-tsittoret/catalogue.json",
+    "segments": "data/bisses/bisse-de-tsittoret/segments.geojson"
   },
   {
     "id": "bisse-de-vercorin",
     "title": "Bisse de Vercorin",
-    "region": "Valais",
-    "commune": "",
+    "region": "Anniviers",
+    "commune": "Chalais",
     "catalogue": "data/bisses/bisse-de-vercorin/catalogue.json",
     "segments": "data/bisses/bisse-de-vercorin/segments.geojson"
   },
@@ -72,11 +72,11 @@
     "segments": "data/bisses/bisse-roux/segments.geojson"
   },
   {
-    "id": "fiescherwyssa",
-    "title": "Fiescherwyssa",
+    "id": "fiescher-wyssa",
+    "title": "Fiescher Wyssa",
     "region": "Conches",
     "commune": "Fieschertal",
-    "catalogue": "data/bisses/fiescherwyssa/catalogue.json",
-    "segments": "data/bisses/fiescherwyssa/segments.geojson"
+    "catalogue": "data/bisses/fiescher-wyssa/catalogue.json",
+    "segments": "data/bisses/fiescher-wyssa/segments.geojson"
   }
 ]

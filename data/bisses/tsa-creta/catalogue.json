@@ -2,27 +2,28 @@
   "schema_version": "0.1",
   "project": {
     "id": "tsa-creta-2026",
-    "title": "Bisse de Tsa Crêta",
+    "title": "Bisse de Tsa-Crêta",
     "year": 2026,
     "source_folder": ""
   },
   "bisse_info": {
     "slug": "tsa-creta",
-    "title": "Bisse de Tsa Crêta",
+    "title": "Bisse de Tsa-Crêta",
     "region": "Hérens",
     "commune": "Mont-Noble",
     "description": "Le bisse de Tsa-Crêta, antérieur à 1400 a été abandonné dans les années 70. Il a été restauré et remis en eau en 2002. Le long de son parcours, d’excellents panneaux didactiques expliquent le bisse, son organisation sociale et l’irrigation. Ce bisse est sous tuyaux sur un tiers du parcours, mais la partie à ciel ouvert est particulièrement bien refaite en empierrement, avec quelques passages en bazots. Son eau est de nouveau utilisée pour l’irrigation des prairies et fait tourner un ancien moulin à roue horizontale à Mase.",
     "itinerary": "Depuis le village de Mase, rejoindre le début du bisse en empruntant les routes forestières pendant environ 1 heure.\nL’itinéraire suit ensuite le bisse, relativement court. À mi-parcours, une gouille située dans la forêt offre un endroit où il est possible de faire une pause avant de poursuivre le long du bisse.\nContinuer jusqu’à revenir au-dessus de Mase, puis redescendre vers le centre du village, point de départ de la randonnée. Une fois de retour, il est possible d’admirer le vieux moulin qui fonctionnait autrefois grâce à l’eau du bisse.",
     "length_km": 3.0,
-    "altitude_min_m": 1780,
-    "altitude_max_m": 1525,
+    "altitude_min_m": 1525,
+    "altitude_max_m": 1780,
     "difficulty": "T1",
     "marked_trail": true,
-    "state": "Tot. en eau",
+    "state": "tot. en eau",
     "tags": [
       "bazot",
       "tretschbord"
-    ]
+    ],
+    "communes": "Mont-Noble"
   },
   "segment_categories": [
     {
@@ -171,29 +172,29 @@
   ],
   "external_resources": [],
   "inventory_info": {
-    "nom": "",
-    "slug": "",
-    "url": "",
-    "description": "",
-    "itineraire": "",
-    "region": "",
-    "communes": "",
-    "etat": "",
-    "sentier": "",
-    "cotation": "",
-    "tags": "",
+    "nom": "Bisse de Tsa-Crêta",
+    "slug": "bisse-de-tsa-creta",
+    "url": "https://bisses-valais.ch/bisses/bisse-de-tsa-creta/",
+    "description": "Le bisse de Tsa-Crêta, antérieur à 1400 a été abandonné dans les années 70. Il a été restauré et remis en eau en 2002. Le long de son parcours, d’excellents panneaux didactiques expliquent le bisse, son organisation sociale et l’irrigation. Ce bisse est sous tuyaux sur un tiers du parcours, mais la partie à ciel ouvert est particulièrement bien refaite en empierrement, avec quelques passages en bazots. Son eau est de nouveau utilisée pour l’irrigation des prairies et fait tourner un ancien moulin à roue horizontale à Mase.",
+    "itineraire": "Dans le village deMase, un sentier balisé grimpe dans les zones de mayens de Tsa Crêta à 1600 m. Depuis là, suivre le bisse jusqu’aux Mayens des Praz . Retour par le même itinéraire.",
+    "region": "Hérens",
+    "communes": "Mont-Noble",
+    "etat": "tot. en eau",
+    "sentier": "balisé",
+    "cotation": "T1",
+    "tags": "bazot, tretschbord",
     "longueur_km": "",
-    "altitude_haut_m": "",
-    "altitude_bas_m": "",
+    "altitude_haut_m": 1780,
+    "altitude_bas_m": 1525,
     "prise_eau": "",
     "zones_irriguees": "",
     "autres_noms": "",
-    "classement_ad": "",
-    "sdt_numero": "",
-    "sdt_importance": "",
+    "classement_ad": "**",
+    "sdt_numero": "237",
+    "sdt_importance": "Régional",
     "post_modified": "",
-    "_source_file": "",
-    "_source_sheet": "",
-    "_imported_at": null
+    "_source_file": "bisses_valais_consolidation_api_mvb.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-08T17:47:34"
   }
 }
