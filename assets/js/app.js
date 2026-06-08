@@ -1,46 +1,33 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-bicolor-polylineoffset-2026-06-07-a");
+console.log("Bisses build bisses-generalized-zoom-2026-06-08-a");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
 const MIN_ZOOM = 16;
-const MAX_ZOOM = 27;
+const MAX_ZOOM = 26;
 
-const SHOW_SEGMENTS_OPEN_CANALIZED_AT_ZOOM = 19;
-const SHOW_SEGMENTS_ABANDONED_AT_ZOOM = 20;
-
-const SEGMENT_STYLE = {
-  outlineWeight: 13,
-  colorWeight: 9,
-  opacity: 0.99
-};
-
-const BICOLOR_STYLE = {
-  outlineWeight: 13,
-  flankWeight: 5.8,
-  offset: 2.35,
-  opacity: 0.99,
-  clickWeight: 20
-};
+const SHOW_SYNTHETIC_TRACES_AT_ZOOM = 19;
+const SHOW_DETAILED_SEGMENTS_AT_ZOOM = 20.5;
+const SHOW_BICOLOR_SPLIT_AT_ZOOM = 25;
 
 const MAP_SCALE_STEPS = [
-  { min: 16, max: 16, label: "Fond général", layer: "ch.swisstopo.pixelkarte-farbe", format: "jpeg", maxNativeZoom: 27 },
-  { min: 17, max: 17, label: "CN 1:1 million", layer: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale", format: "jpeg", maxNativeZoom: 27 },
-  { min: 18, max: 18, label: "CN 1:500k", layer: "ch.swisstopo.pixelkarte-farbe-pk500.noscale", format: "jpeg", maxNativeZoom: 27 },
-  { min: 19, max: 19, label: "CN 1:200k", layer: "ch.swisstopo.pixelkarte-farbe-pk200.noscale", format: "jpeg", maxNativeZoom: 27 },
-  { min: 20, max: 20, label: "CN 1:100k", layer: "ch.swisstopo.pixelkarte-farbe-pk100.noscale", format: "jpeg", maxNativeZoom: 27 },
-  { min: 21, max: 21, label: "CN 1:50k", layer: "ch.swisstopo.pixelkarte-farbe-pk50.noscale", format: "jpeg", maxNativeZoom: 27 },
-  { min: 22, max: 23, label: "CN 1:25k", layer: "ch.swisstopo.pixelkarte-farbe-pk25.noscale", format: "jpeg", maxNativeZoom: 27 },
-  { min: 24, max: 27, label: "CN 1:10k", layer: "ch.swisstopo.landeskarte-farbe-10", format: "png", maxNativeZoom: 27 }
+  { min: 16, max: 16.5, label: "CN 1:1 million", layer: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale", format: "jpeg", maxNativeZoom: 26, muted: false },
+  { min: 17, max: 18, label: "CN 1:500k", layer: "ch.swisstopo.pixelkarte-farbe-pk500.noscale", format: "jpeg", maxNativeZoom: 26, muted: true },
+  { min: 18.5, max: 19, label: "CN 1:200k", layer: "ch.swisstopo.pixelkarte-farbe-pk200.noscale", format: "jpeg", maxNativeZoom: 26, muted: true },
+  { min: 19.5, max: 20, label: "CN 1:100k", layer: "ch.swisstopo.pixelkarte-farbe-pk100.noscale", format: "jpeg", maxNativeZoom: 26, muted: true },
+  { min: 20.5, max: 21.5, label: "CN 1:50k", layer: "ch.swisstopo.pixelkarte-farbe-pk50.noscale", format: "jpeg", maxNativeZoom: 26, muted: true },
+  { min: 22, max: 23, label: "CN 1:25k", layer: "ch.swisstopo.pixelkarte-farbe-pk25.noscale", format: "jpeg", maxNativeZoom: 26, muted: true },
+  { min: 23.5, max: 26, label: "CN 1:10k", layer: "ch.swisstopo.landeskarte-farbe-10", format: "png", maxNativeZoom: 26, muted: true }
 ];
 
 const SATELLITE_STEP = {
   label: "Satellite",
   layer: "ch.swisstopo.swissimage",
   format: "jpeg",
-  maxNativeZoom: 27
+  maxNativeZoom: 26,
+  muted: false
 };
 
 const WATER_LABELS = {
@@ -118,7 +105,9 @@ const map = L.map("map", {
   zoomControl: false,
   scrollWheelZoom: true,
   minZoom: MIN_ZOOM,
-  maxZoom: MAX_ZOOM
+  maxZoom: MAX_ZOOM,
+  zoomSnap: 0.5,
+  zoomDelta: 0.5
 });
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -138,6 +127,64 @@ map.getPane("photoPane").style.zIndex = 430;
 state.bisseMarkers.addTo(map);
 state.photoLayer.addTo(map);
 
+function roundedZoom() {
+  return Math.round(map.getZoom() * 2) / 2;
+}
+
+function segmentRenderMode() {
+  const zoom = roundedZoom();
+
+  if (zoom < SHOW_SYNTHETIC_TRACES_AT_ZOOM) {
+    return "markers";
+  }
+
+  if (zoom < SHOW_DETAILED_SEGMENTS_AT_ZOOM) {
+    return "synthetic";
+  }
+
+  return "detailed";
+}
+
+function segmentStyleForZoom() {
+  const zoom = roundedZoom();
+
+  if (zoom < SHOW_DETAILED_SEGMENTS_AT_ZOOM) {
+    return { key: "synthetic", outlineWeight: 9, colorWeight: 6, opacity: 0.96, clickWeight: 16 };
+  }
+
+  if (zoom <= 22.5) {
+    return { key: "detail-light", outlineWeight: 11, colorWeight: 7, opacity: 0.98, clickWeight: 18 };
+  }
+
+  if (zoom <= 24.5) {
+    return { key: "detail-medium", outlineWeight: 12, colorWeight: 8, opacity: 0.99, clickWeight: 19 };
+  }
+
+  return { key: "detail-final", outlineWeight: 13, colorWeight: 9, opacity: 0.99, clickWeight: 20 };
+}
+
+function bicolorStyleForZoom() {
+  const base = segmentStyleForZoom();
+  const zoom = roundedZoom();
+
+  if (zoom < SHOW_BICOLOR_SPLIT_AT_ZOOM) {
+    return {
+      ...base,
+      mode: "simplified"
+    };
+  }
+
+  return {
+    ...base,
+    mode: "split",
+    outlineWeight: 13,
+    flankWeight: 5.8,
+    offset: 2.35,
+    opacity: 0.99,
+    clickWeight: 20
+  };
+}
+
 function stepForZoom(zoom) {
   const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
   return MAP_SCALE_STEPS.find((step) => clampedZoom >= step.min && clampedZoom <= step.max) || MAP_SCALE_STEPS[0];
@@ -152,8 +199,19 @@ function makeSwissLayer(step) {
   });
 }
 
+function refreshBasemapFilter(step) {
+  const mapEl = $("map");
+  if (step.muted) {
+    mapEl.classList.add("basemap-muted");
+  } else {
+    mapEl.classList.remove("basemap-muted");
+  }
+}
+
 function setBaseLayer(step) {
   const key = `${state.base}:${step.layer}:${step.format}`;
+
+  refreshBasemapFilter(step);
 
   if (state.currentStepKey === key && state.baseLayer) {
     updateScalePill();
@@ -177,7 +235,7 @@ function refreshBaseLayer() {
   if (state.base === "satellite") {
     setBaseLayer(SATELLITE_STEP);
   } else {
-    setBaseLayer(stepForZoom(map.getZoom()));
+    setBaseLayer(stepForZoom(roundedZoom()));
   }
 }
 
@@ -188,10 +246,10 @@ function toggleBase() {
   refreshBaseLayer();
 }
 
-function updateScalePill(segmentCount = null) {
-  const zoom = map.getZoom();
+function updateScalePill(count = null, unit = "segments") {
+  const zoom = roundedZoom();
   const step = state.base === "satellite" ? SATELLITE_STEP : stepForZoom(zoom);
-  const extra = segmentCount === null ? "" : ` · ${segmentCount} segments`;
+  const extra = count === null ? "" : ` · ${count} ${unit}`;
   showScale(`${step.label} · z${zoom}${extra}`);
 }
 
@@ -349,6 +407,71 @@ function latlngPartsFromGeometry(geometry) {
   return [];
 }
 
+function approximateLineLength(coords) {
+  let length = 0;
+
+  for (let i = 1; i < coords.length; i += 1) {
+    const a = coords[i - 1];
+    const b = coords[i];
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length < 2 || b.length < 2) continue;
+
+    const latMean = ((a[1] + b[1]) / 2) * Math.PI / 180;
+    const dx = (b[0] - a[0]) * Math.cos(latMean);
+    const dy = b[1] - a[1];
+    length += Math.sqrt((dx * dx) + (dy * dy));
+  }
+
+  return length;
+}
+
+function approximateFeatureLength(feature) {
+  const g = feature.geometry || {};
+  if (g.type === "LineString") return approximateLineLength(g.coordinates || []);
+  if (g.type === "MultiLineString") {
+    return (g.coordinates || []).reduce((sum, line) => sum + approximateLineLength(line), 0);
+  }
+  return 0;
+}
+
+function dominantCategoryForData(data) {
+  const cats = categories(data.catalogue);
+  const totals = { open: 0, canalized: 0, abandoned: 0, mixed: 0, unknown: 0 };
+
+  for (const feature of data.geojson.features || []) {
+    const len = approximateFeatureLength(feature) || 1;
+
+    if (isBicolorFeature(feature)) {
+      const types = normalizedStructureTypes(feature);
+      if (!types.length) {
+        totals.mixed += len;
+      } else {
+        const share = len / types.length;
+        for (const type of types) {
+          const norm = normalizeStructureType(type);
+          totals[norm] = (totals[norm] || 0) + share;
+        }
+      }
+    } else {
+      const type = normalizeStructureType(feature?.properties?.structure_type);
+      totals[type] = (totals[type] || 0) + len;
+    }
+  }
+
+  const priority = ["open", "canalized", "abandoned", "mixed", "unknown"];
+  let bestType = "unknown";
+  let bestValue = -1;
+
+  for (const type of priority) {
+    const value = totals[type] || 0;
+    if (value > bestValue) {
+      bestType = type;
+      bestValue = value;
+    }
+  }
+
+  return categoryForType(bestType, cats);
+}
+
 function geoBounds(geojson) {
   const b = L.latLngBounds();
 
@@ -373,36 +496,11 @@ function boundsWithPhotos(bounds, photos) {
   return bounds;
 }
 
-function typesForCurrentZoom() {
-  const zoom = map.getZoom();
-
-  if (zoom >= SHOW_SEGMENTS_ABANDONED_AT_ZOOM) {
-    return ["open", "canalized", "abandoned", "mixed"];
-  }
-
-  if (zoom >= SHOW_SEGMENTS_OPEN_CANALIZED_AT_ZOOM) {
-    return ["open", "canalized", "mixed"];
-  }
-
-  return [];
-}
-
-function shouldShowFeature(feature, allowedTypes) {
-  if (!allowedTypes.length) return false;
-
-  if (isBicolorFeature(feature)) {
-    return normalizedStructureTypes(feature).some((type) => allowedTypes.includes(type));
-  }
-
-  const type = normalizeStructureType(feature?.properties?.structure_type);
-  return allowedTypes.includes(type);
-}
-
 function refreshMarkerVisibility() {
-  const segmentsMode = map.getZoom() >= SHOW_SEGMENTS_OPEN_CANALIZED_AT_ZOOM;
+  const tracesMode = roundedZoom() >= SHOW_SYNTHETIC_TRACES_AT_ZOOM;
   const mapEl = $("map");
 
-  if (segmentsMode) {
+  if (tracesMode) {
     mapEl.classList.add("segments-mode");
     if (map.hasLayer(state.bisseMarkers)) {
       map.removeLayer(state.bisseMarkers);
@@ -427,17 +525,39 @@ function removeVisibleSegments() {
   }
 }
 
-function buildVisibleSegmentsFeatureCollection(dataList, allowedTypes) {
+function buildSyntheticFeatureCollection(dataList) {
   const features = [];
 
   for (const data of dataList) {
-    const cats = categories(data.catalogue);
+    const dominant = dominantCategoryForData(data);
     const info = data.catalogue.bisse_info || {};
     const bisseTitle = info.title || data.item.title || "Bisse";
 
     for (const feature of data.geojson.features || []) {
-      if (!shouldShowFeature(feature, allowedTypes)) continue;
+      const cloned = JSON.parse(JSON.stringify(feature));
+      cloned.properties = cloned.properties || {};
+      cloned.properties.__display_mode = "synthetic";
+      cloned.properties.__bisse_id = data.item.id;
+      cloned.properties.__bisse_title = bisseTitle;
+      cloned.properties.__category_name = dominant.name || "Tracé synthétique";
+      cloned.properties.__category_color = dominant.color || "#1e88e5";
+      features.push(cloned);
+    }
+  }
 
+  return { type: "FeatureCollection", features };
+}
+
+function buildDetailedFeatureCollection(dataList) {
+  const features = [];
+
+  for (const data of dataList) {
+    const cats = categories(data.catalogue);
+    const dominant = dominantCategoryForData(data);
+    const info = data.catalogue.bisse_info || {};
+    const bisseTitle = info.title || data.item.title || "Bisse";
+
+    for (const feature of data.geojson.features || []) {
       const cloned = JSON.parse(JSON.stringify(feature));
       cloned.properties = cloned.properties || {};
       cloned.properties.structure_type = normalizeStructureType(cloned.properties.structure_type);
@@ -446,8 +566,15 @@ function buildVisibleSegmentsFeatureCollection(dataList, allowedTypes) {
       cloned.properties.__category_name = segmentDisplayName(cloned, cats);
 
       if (isBicolorFeature(cloned)) {
-        cloned.properties.__display_mode = "bicolor";
-        cloned.properties.__bicolor_colors = bicolorColors(cloned, cats);
+        const bstyle = bicolorStyleForZoom();
+
+        if (bstyle.mode === "split") {
+          cloned.properties.__display_mode = "bicolor";
+          cloned.properties.__bicolor_colors = bicolorColors(cloned, cats);
+        } else {
+          cloned.properties.__display_mode = "single";
+          cloned.properties.__category_color = dominant.color || bicolorColors(cloned, cats)[0] || "#777777";
+        }
       } else {
         const cat = categoryFor(cloned, cats);
         cloned.properties.__display_mode = "single";
@@ -497,27 +624,27 @@ function bindSegmentInteraction(layer, feature) {
   });
 }
 
-function addHaloForPart(layerGroup, latlngs, weight) {
+function addHaloForPart(layerGroup, latlngs, style) {
   if (!latlngs.length) return;
 
   L.polyline(latlngs, {
     pane: "segmentOutlinePane",
     color: "#ffffff",
-    weight,
-    opacity: SEGMENT_STYLE.opacity,
+    weight: style.outlineWeight,
+    opacity: style.opacity,
     lineCap: "round",
     lineJoin: "round",
     interactive: false
   }).addTo(layerGroup);
 }
 
-function addClickTarget(layerGroup, latlngs, feature) {
+function addClickTarget(layerGroup, latlngs, feature, style) {
   if (!latlngs.length) return;
 
   const target = L.polyline(latlngs, {
     pane: "segmentHitPane",
     color: "#000000",
-    weight: BICOLOR_STYLE.clickWeight,
+    weight: style.clickWeight,
     opacity: 0,
     lineCap: "round",
     lineJoin: "round",
@@ -529,28 +656,30 @@ function addClickTarget(layerGroup, latlngs, feature) {
 
 function addSingleSegment(layerGroup, outlineGroup, feature) {
   const parts = latlngPartsFromGeometry(feature.geometry);
+  const style = segmentStyleForZoom();
   const color = feature.properties.__category_color || "#777777";
 
   for (const latlngs of parts) {
-    addHaloForPart(outlineGroup, latlngs, SEGMENT_STYLE.outlineWeight);
+    addHaloForPart(outlineGroup, latlngs, style);
 
     const line = L.polyline(latlngs, {
       pane: "segmentColorPane",
       color,
-      weight: SEGMENT_STYLE.colorWeight,
-      opacity: SEGMENT_STYLE.opacity,
+      weight: style.colorWeight,
+      opacity: style.opacity,
       lineCap: "round",
       lineJoin: "round",
       interactive: true
     }).addTo(layerGroup);
 
     bindSegmentInteraction(line, feature);
-    addClickTarget(layerGroup, latlngs, feature);
+    addClickTarget(layerGroup, latlngs, feature, style);
   }
 }
 
 function addBicolorSegment(layerGroup, outlineGroup, feature) {
   const parts = latlngPartsFromGeometry(feature.geometry);
+  const style = bicolorStyleForZoom();
   const colors = Array.isArray(feature.properties.__bicolor_colors)
     ? feature.properties.__bicolor_colors
     : ["#ef6c00", "#111111"];
@@ -559,33 +688,33 @@ function addBicolorSegment(layerGroup, outlineGroup, feature) {
   const colorB = colors[1] || "#111111";
 
   for (const latlngs of parts) {
-    addHaloForPart(outlineGroup, latlngs, BICOLOR_STYLE.outlineWeight);
+    addHaloForPart(outlineGroup, latlngs, style);
 
     const left = L.polyline(latlngs, {
       pane: "segmentColorPane",
       color: colorA,
-      weight: BICOLOR_STYLE.flankWeight,
-      opacity: BICOLOR_STYLE.opacity,
+      weight: style.flankWeight,
+      opacity: style.opacity,
       lineCap: "round",
       lineJoin: "round",
-      offset: -BICOLOR_STYLE.offset,
+      offset: -style.offset,
       interactive: true
     }).addTo(layerGroup);
 
     const right = L.polyline(latlngs, {
       pane: "segmentColorPane",
       color: colorB,
-      weight: BICOLOR_STYLE.flankWeight,
-      opacity: BICOLOR_STYLE.opacity,
+      weight: style.flankWeight,
+      opacity: style.opacity,
       lineCap: "round",
       lineJoin: "round",
-      offset: BICOLOR_STYLE.offset,
+      offset: style.offset,
       interactive: true
     }).addTo(layerGroup);
 
     bindSegmentInteraction(left, feature);
     bindSegmentInteraction(right, feature);
-    addClickTarget(layerGroup, latlngs, feature);
+    addClickTarget(layerGroup, latlngs, feature, style);
   }
 }
 
@@ -608,10 +737,12 @@ function drawVisibleSegments(featureCollection) {
 async function refreshVisibleSegments() {
   refreshMarkerVisibility();
 
-  const allowedTypes = typesForCurrentZoom();
-  const key = `${allowedTypes.join(",")}:${state.index.length}:${state.cache.size}`;
+  const mode = segmentRenderMode();
+  const style = segmentStyleForZoom();
+  const bstyle = bicolorStyleForZoom();
+  const key = `${mode}:${style.key}:${bstyle.mode}:${roundedZoom()}:${state.index.length}:${state.cache.size}`;
 
-  if (!allowedTypes.length) {
+  if (mode === "markers") {
     state.currentSegmentsKey = key;
     removeVisibleSegments();
     updateScalePill(0);
@@ -619,7 +750,8 @@ async function refreshVisibleSegments() {
   }
 
   if (state.currentSegmentsKey === key && state.segmentColorLayer) {
-    updateScalePill(state.segmentColorLayer.getLayers().length);
+    const count = state.segmentColorLayer.getLayers().length;
+    updateScalePill(count, mode === "synthetic" ? "tracés" : "segments");
     return;
   }
 
@@ -636,9 +768,14 @@ async function refreshVisibleSegments() {
     }
   }
 
-  const visibleGeojson = buildVisibleSegmentsFeatureCollection(dataList, allowedTypes);
+  const visibleGeojson = mode === "synthetic"
+    ? buildSyntheticFeatureCollection(dataList)
+    : buildDetailedFeatureCollection(dataList);
+
   drawVisibleSegments(visibleGeojson);
-  updateScalePill(visibleGeojson.features.length);
+
+  const unit = mode === "synthetic" ? "tracés" : "segments";
+  updateScalePill(visibleGeojson.features.length, unit);
 }
 
 function markerIcon() {
@@ -900,7 +1037,8 @@ function resetValais() {
   $("panel-content").innerHTML = `
     <p class="muted">
       Cliquez sur une pastille pour afficher un bisse.
-      Les traces apparaissent automatiquement à partir du zoom 19.
+      Les tracés synthétiques apparaissent à partir du zoom 19 ;
+      les segments détaillés apparaissent à partir du zoom 20.5.
     </p>
   `;
 

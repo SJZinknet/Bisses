@@ -23,8 +23,13 @@ body {
   background: #dfe5da;
 }
 
-/* Fond Swisstopo légèrement blanchi : assez doux pour rester patrimonial. */
+/* Fond Swisstopo : la CN 1:1 million reste non blanchie.
+   Les fonds plus détaillés sont légèrement blanchis pour laisser respirer les tracés. */
 .leaflet-tile-pane {
+  filter: none;
+}
+
+#map.basemap-muted .leaflet-tile-pane {
   filter: brightness(1.10) saturate(0.82) contrast(0.90);
 }
 
