@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-panels-focus-2026-06-08-d");
+console.log("Bisses build bisses-ui-clusters-2026-06-11-v1");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -49,6 +49,40 @@ const FALLBACK_CATEGORIES = {
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
+function clusterRadiusForZoom(zoom) {
+  // Rayon en pixels : il diminue à chaque demi-zoom pour permettre
+  // aux clusters devenus trop lâches de se séparer progressivement.
+  if (zoom >= 18.5) return 14;
+  if (zoom >= 18) return 22;
+  if (zoom >= 17.5) return 32;
+  if (zoom >= 17) return 44;
+  if (zoom >= 16.5) return 58;
+  return 76;
+}
+
+function createBisseMarkerLayer() {
+  if (!L.markerClusterGroup) {
+    console.warn("Leaflet.markercluster n'est pas chargé : fallback vers pastilles simples.");
+    return L.layerGroup();
+  }
+
+  return L.markerClusterGroup({
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: false,
+    spiderfyOnMaxZoom: false,
+    spiderfyOnEveryZoom: false,
+    removeOutsideVisibleBounds: true,
+    disableClusteringAtZoom: SHOW_SYNTHETIC_TRACES_AT_ZOOM,
+    maxClusterRadius: clusterRadiusForZoom,
+    iconCreateFunction: (cluster) => L.divIcon({
+      className: "",
+      html: `<div class="bisse-cluster">${cluster.getChildCount()}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    })
+  });
+}
+
 const state = {
   index: [],
   cache: new Map(),
@@ -59,7 +93,7 @@ const state = {
   segmentRefreshToken: 0,
   listHtml: "",
   baseLayer: null,
-  bisseMarkers: L.layerGroup(),
+  bisseMarkers: createBisseMarkerLayer(),
   segmentOutlineLayer: null,
   segmentColorLayer: null,
   photoLayer: L.layerGroup()
@@ -165,6 +199,19 @@ map.getPane("photoPane").style.zIndex = 430;
 
 state.bisseMarkers.addTo(map);
 state.photoLayer.addTo(map);
+
+if (L.markerClusterGroup && state.bisseMarkers.on) {
+  state.bisseMarkers.on("clusterclick", (event) => {
+    clearLeafletFocus();
+
+    if (event.originalEvent) {
+      L.DomEvent.stop(event.originalEvent);
+    }
+
+    const nextZoom = Math.min(SHOW_SYNTHETIC_TRACES_AT_ZOOM, roundedZoom() + 0.5);
+    map.setView(event.latlng, nextZoom, { animate: true });
+  });
+}
 
 function roundedZoom() {
   return Math.round(map.getZoom() * 2) / 2;

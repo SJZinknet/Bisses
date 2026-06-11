@@ -34,7 +34,8 @@ body {
 }
 
 /* Sécurité : les pastilles disparaissent dès que la carte passe en mode traces. */
-#map.segments-mode .bisse-marker {
+#map.segments-mode .bisse-marker,
+#map.segments-mode .bisse-cluster {
   display: none;
 }
 
@@ -432,6 +433,37 @@ h3 {
   border-radius: 50%;
   background: #1e88e5;
   box-shadow: 0 4px 15px rgba(0,0,0,.35);
+}
+
+.bisse-cluster {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #1e88e5;
+  color: #fff;
+  font-weight: 700;
+  font-size: .9rem;
+  line-height: 1;
+  box-shadow: 0 4px 15px rgba(0,0,0,.35);
+}
+
+.marker-cluster,
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: transparent;
+  border: 0;
+}
+
+.marker-cluster div,
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: transparent;
+  margin: 0;
 }
 
 .photo-marker {
