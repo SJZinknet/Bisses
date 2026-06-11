@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-panels-focus-2026-06-08-d"
+# BUILD_VERSION = "bisses-ui-clusters-2026-06-11-v1"
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ INDEX_HTML = r"""<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bisses du Valais</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
@@ -27,7 +28,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-ui-panels-focus-2026-06-08-d</div>
+          <div class="build-version">bisses-ui-clusters-2026-06-11-v1</div>
         </div>
 
         <div class="toolbar">
@@ -53,6 +54,7 @@ INDEX_HTML = r"""<!doctype html>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-tilelayer-swiss@2.4.0/dist/Leaflet.TileLayer.Swiss.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-polylineoffset@1.1.1/leaflet.polylineoffset.js"></script>
   <script src="assets/js/app.js"></script>
@@ -97,7 +99,8 @@ body {
 }
 
 /* Sécurité : les pastilles disparaissent dès que la carte passe en mode traces. */
-#map.segments-mode .bisse-marker {
+#map.segments-mode .bisse-marker,
+#map.segments-mode .bisse-cluster {
   display: none;
 }
 
@@ -497,6 +500,37 @@ h3 {
   box-shadow: 0 4px 15px rgba(0,0,0,.35);
 }
 
+.bisse-cluster {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #1e88e5;
+  color: #fff;
+  font-weight: 700;
+  font-size: .9rem;
+  line-height: 1;
+  box-shadow: 0 4px 15px rgba(0,0,0,.35);
+}
+
+.marker-cluster,
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: transparent;
+  border: 0;
+}
+
+.marker-cluster div,
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: transparent;
+  margin: 0;
+}
+
 .photo-marker {
   width: 18px;
   height: 18px;
@@ -712,7 +746,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-panels-focus-2026-06-08-d");
+console.log("Bisses build bisses-ui-clusters-2026-06-11-v1");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -760,6 +794,40 @@ const FALLBACK_CATEGORIES = {
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
+function clusterRadiusForZoom(zoom) {
+  // Rayon en pixels : il diminue à chaque demi-zoom pour permettre
+  // aux clusters devenus trop lâches de se séparer progressivement.
+  if (zoom >= 18.5) return 14;
+  if (zoom >= 18) return 22;
+  if (zoom >= 17.5) return 32;
+  if (zoom >= 17) return 44;
+  if (zoom >= 16.5) return 58;
+  return 76;
+}
+
+function createBisseMarkerLayer() {
+  if (!L.markerClusterGroup) {
+    console.warn("Leaflet.markercluster n'est pas chargé : fallback vers pastilles simples.");
+    return L.layerGroup();
+  }
+
+  return L.markerClusterGroup({
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: false,
+    spiderfyOnMaxZoom: false,
+    spiderfyOnEveryZoom: false,
+    removeOutsideVisibleBounds: true,
+    disableClusteringAtZoom: SHOW_SYNTHETIC_TRACES_AT_ZOOM,
+    maxClusterRadius: clusterRadiusForZoom,
+    iconCreateFunction: (cluster) => L.divIcon({
+      className: "",
+      html: `<div class="bisse-cluster">${cluster.getChildCount()}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    })
+  });
+}
+
 const state = {
   index: [],
   cache: new Map(),
@@ -770,7 +838,7 @@ const state = {
   segmentRefreshToken: 0,
   listHtml: "",
   baseLayer: null,
-  bisseMarkers: L.layerGroup(),
+  bisseMarkers: createBisseMarkerLayer(),
   segmentOutlineLayer: null,
   segmentColorLayer: null,
   photoLayer: L.layerGroup()
@@ -876,6 +944,19 @@ map.getPane("photoPane").style.zIndex = 430;
 
 state.bisseMarkers.addTo(map);
 state.photoLayer.addTo(map);
+
+if (L.markerClusterGroup && state.bisseMarkers.on) {
+  state.bisseMarkers.on("clusterclick", (event) => {
+    clearLeafletFocus();
+
+    if (event.originalEvent) {
+      L.DomEvent.stop(event.originalEvent);
+    }
+
+    const nextZoom = Math.min(SHOW_SYNTHETIC_TRACES_AT_ZOOM, roundedZoom() + 0.5);
+    map.setView(event.latlng, nextZoom, { animate: true });
+  });
+}
 
 function roundedZoom() {
   return Math.round(map.getZoom() * 2) / 2;
@@ -1884,7 +1965,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-panels-focus-2026-06-08-d
+bisses-ui-clusters-2026-06-11-v1
 
 Générer le site :
 python build_bisses.py
@@ -1925,7 +2006,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-ui-panels-focus-2026-06-08-d")
+    print("Version : bisses-ui-clusters-2026-06-11-v1")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
