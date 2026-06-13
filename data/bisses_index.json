@@ -40,12 +40,12 @@
     "segments": "data/bisses/bisse-de-salins/segments.geojson"
   },
   {
-    "id": "tsa-creta",
+    "id": "bisse-de-tsa-creta",
     "title": "Bisse de Tsa-Crêta",
     "region": "Hérens",
     "commune": "Mont-Noble",
-    "catalogue": "data/bisses/tsa-creta/catalogue.json",
-    "segments": "data/bisses/tsa-creta/segments.geojson"
+    "catalogue": "data/bisses/bisse-de-tsa-creta/catalogue.json",
+    "segments": "data/bisses/bisse-de-tsa-creta/segments.geojson"
   },
   {
     "id": "bisse-de-tsittoret",
@@ -54,6 +54,14 @@
     "commune": "Crans-Montana",
     "catalogue": "data/bisses/bisse-de-tsittoret/catalogue.json",
     "segments": "data/bisses/bisse-de-tsittoret/segments.geojson"
+  },
+  {
+    "id": "bisse-de-varone",
+    "title": "Bisse de Varone",
+    "region": "Raspille",
+    "commune": "Varen, Crans-Montana",
+    "catalogue": "data/bisses/bisse-de-varone/catalogue.json",
+    "segments": "data/bisses/bisse-de-varone/segments.geojson"
   },
   {
     "id": "bisse-de-vercorin",

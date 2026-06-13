@@ -69,11 +69,11 @@
     "zones_irriguees": "",
     "autres_noms": "",
     "classement_ad": "***",
-    "sdt_numero": "219",
+    "sdt_numero": 219,
     "sdt_importance": "Cantonal",
     "post_modified": "",
-    "_source_file": "bisses_valais_consolidation_api_mvb.xlsx",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
     "_source_sheet": "Bisses_final",
-    "_imported_at": "2026-06-08T17:48:33"
+    "_imported_at": "2026-06-10T17:27:58"
   }
 }
