@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-clusters-2026-06-11-v1"
+# BUILD_VERSION = "bisses-ui-clusters-2026-06-11-v1ajoutignoré"
 
 from __future__ import annotations
 
