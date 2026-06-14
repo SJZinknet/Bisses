@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-14-v2");
+console.log("Bisses build bisses-ui-clusters-2026-06-14-v3");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -50,15 +50,15 @@ const FALLBACK_CATEGORIES = {
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
 function clusterRadiusForZoom(zoom) {
-  // Rayon en pixels : il diminue à chaque demi-zoom.
-  // À z16.5, on garde ensemble les pastilles qui se touchent ou se chevauchent encore.
-  // À z17, elles peuvent se séparer si la distance visuelle est devenue suffisante.
-  if (zoom >= 18.5) return 16;
-  if (zoom >= 18) return 26;
-  if (zoom >= 17.5) return 38;
-  if (zoom >= 17) return 50;
-  if (zoom >= 16.5) return 72;
-  return 84;
+  // Rayon en pixels : compromis entre v1 et v2.
+  // z16.5 reste assez tolérant pour éviter les chevauchements visuels,
+  // mais moins rassembleur que v2.
+  if (zoom >= 18.5) return 15;
+  if (zoom >= 18) return 24;
+  if (zoom >= 17.5) return 35;
+  if (zoom >= 17) return 47;
+  if (zoom >= 16.5) return 66;
+  return 80;
 }
 
 function createBisseMarkerLayer() {
@@ -93,6 +93,7 @@ const state = {
   currentSegmentsKey: "",
   segmentRefreshToken: 0,
   listHtml: "",
+  legendHtml: "",
   baseLayer: null,
   bisseMarkers: createBisseMarkerLayer(),
   segmentOutlineLayer: null,
@@ -630,6 +631,8 @@ function refreshMarkerVisibility() {
       state.bisseMarkers.addTo(map);
     }
   }
+
+  refreshLegendVisibility();
 }
 
 function removeVisibleSegments() {
@@ -971,16 +974,78 @@ async function renderMarkers() {
 
 function clearSelectedPhotosAndLegend() {
   state.photoLayer.clearLayers();
-  $("legend").innerHTML = "";
+  refreshLegendVisibility();
 }
 
-function renderLegend(catalogue) {
-  $("legend").innerHTML = (catalogue.segment_categories || []).map((cat) => `
+function shouldShowCategoryInLegend(cat) {
+  const id = normalizeStructureType(cat.id || cat.name || cat.label);
+  const label = String(cat.name || cat.label || cat.id || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (id === "unknown") return false;
+  if (label.includes("non classe")) return false;
+  if (label.includes("non class")) return false;
+
+  return true;
+}
+
+function collectLegendCategories() {
+  const byId = new Map();
+
+  for (const data of state.cache.values()) {
+    for (const cat of data.catalogue.segment_categories || []) {
+      const id = normalizeStructureType(cat.id || cat.name || cat.label);
+      if (!id || !shouldShowCategoryInLegend(cat)) continue;
+
+      byId.set(id, {
+        id,
+        name: cat.name || cat.label || FALLBACK_CATEGORIES[id]?.name || id,
+        color: cat.color || FALLBACK_CATEGORIES[id]?.color || "#777777"
+      });
+    }
+  }
+
+  // Fallback stable si certains catalogues ne sont pas encore chargés.
+  for (const id of ["open", "canalized", "abandoned"]) {
+    if (!byId.has(id)) {
+      byId.set(id, FALLBACK_CATEGORIES[id]);
+    }
+  }
+
+  const preferredOrder = ["open", "canalized", "abandoned"];
+  const ordered = preferredOrder
+    .map((id) => byId.get(id))
+    .filter(Boolean);
+
+  const extras = [...byId.values()]
+    .filter((cat) => !preferredOrder.includes(cat.id))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name), "fr"));
+
+  return [...ordered, ...extras];
+}
+
+function refreshLegend() {
+  const cats = collectLegendCategories();
+
+  state.legendHtml = cats.map((cat) => `
     <span class="legend-item">
       <span class="legend-swatch" style="background:${escapeHtml(cat.color || "#777")}"></span>
       ${escapeHtml(cat.name || cat.label || cat.id)}
     </span>
   `).join("");
+
+  $("legend").innerHTML = state.legendHtml;
+  refreshLegendVisibility();
+}
+
+function refreshLegendVisibility() {
+  const legend = $("legend");
+  const showLegend = roundedZoom() >= SHOW_SYNTHETIC_TRACES_AT_ZOOM && Boolean(state.legendHtml);
+
+  legend.classList.toggle("is-hidden", !showLegend);
 }
 
 function renderPhotos(data) {
@@ -1132,7 +1197,7 @@ async function selectBisse(id, options = {}) {
   try {
     const data = await loadBisse(item);
     renderPanel(data);
-    renderLegend(data.catalogue);
+    refreshLegend();
     renderPhotos(data);
 
     if (options.fit !== false) {
@@ -1171,6 +1236,7 @@ async function init() {
     state.index = await loadJson("data/bisses_index.json");
     renderList();
     await renderMarkers();
+    refreshLegend();
     resetValais();
     await refreshVisibleSegments();
 
