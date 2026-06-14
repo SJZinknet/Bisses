@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-11-v1");
+console.log("Bisses build bisses-ui-clusters-2026-06-14-v2");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -50,14 +50,15 @@ const FALLBACK_CATEGORIES = {
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
 function clusterRadiusForZoom(zoom) {
-  // Rayon en pixels : il diminue à chaque demi-zoom pour permettre
-  // aux clusters devenus trop lâches de se séparer progressivement.
-  if (zoom >= 18.5) return 14;
-  if (zoom >= 18) return 22;
-  if (zoom >= 17.5) return 32;
-  if (zoom >= 17) return 44;
-  if (zoom >= 16.5) return 58;
-  return 76;
+  // Rayon en pixels : il diminue à chaque demi-zoom.
+  // À z16.5, on garde ensemble les pastilles qui se touchent ou se chevauchent encore.
+  // À z17, elles peuvent se séparer si la distance visuelle est devenue suffisante.
+  if (zoom >= 18.5) return 16;
+  if (zoom >= 18) return 26;
+  if (zoom >= 17.5) return 38;
+  if (zoom >= 17) return 50;
+  if (zoom >= 16.5) return 72;
+  return 84;
 }
 
 function createBisseMarkerLayer() {
@@ -73,7 +74,7 @@ function createBisseMarkerLayer() {
     spiderfyOnEveryZoom: false,
     removeOutsideVisibleBounds: true,
     disableClusteringAtZoom: SHOW_SYNTHETIC_TRACES_AT_ZOOM,
-    maxClusterRadius: clusterRadiusForZoom,
+    maxClusterRadius: () => clusterRadiusForZoom(roundedZoom()),
     iconCreateFunction: (cluster) => L.divIcon({
       className: "",
       html: `<div class="bisse-cluster">${cluster.getChildCount()}</div>`,
