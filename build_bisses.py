@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-clusters-2026-06-11-v1ajoutignoré"
+# BUILD_VERSION = "bisses-ui-clusters-2026-06-14 v2"
 
 from __future__ import annotations
 
@@ -28,7 +28,8 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-ui-clusters-2026-06-11-v1</div>
+          <div class="build-version">bisses-ui-clusters-2026-06-14
+        -v2</div>
         </div>
 
         <div class="toolbar">
@@ -746,7 +747,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-11-v1");
+console.log("Bisses build bisses-ui-clusters-2026-06-14-v2");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -795,14 +796,15 @@ const FALLBACK_CATEGORIES = {
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
 function clusterRadiusForZoom(zoom) {
-  // Rayon en pixels : il diminue à chaque demi-zoom pour permettre
-  // aux clusters devenus trop lâches de se séparer progressivement.
-  if (zoom >= 18.5) return 14;
-  if (zoom >= 18) return 22;
-  if (zoom >= 17.5) return 32;
-  if (zoom >= 17) return 44;
-  if (zoom >= 16.5) return 58;
-  return 76;
+  // Rayon en pixels : il diminue à chaque demi-zoom.
+  // À z16.5, on garde ensemble les pastilles qui se touchent ou se chevauchent encore.
+  // À z17, elles peuvent se séparer si la distance visuelle est devenue suffisante.
+  if (zoom >= 18.5) return 16;
+  if (zoom >= 18) return 26;
+  if (zoom >= 17.5) return 38;
+  if (zoom >= 17) return 50;
+  if (zoom >= 16.5) return 72;
+  return 84;
 }
 
 function createBisseMarkerLayer() {
@@ -818,7 +820,7 @@ function createBisseMarkerLayer() {
     spiderfyOnEveryZoom: false,
     removeOutsideVisibleBounds: true,
     disableClusteringAtZoom: SHOW_SYNTHETIC_TRACES_AT_ZOOM,
-    maxClusterRadius: clusterRadiusForZoom,
+    maxClusterRadius: () => clusterRadiusForZoom(roundedZoom()),
     iconCreateFunction: (cluster) => L.divIcon({
       className: "",
       html: `<div class="bisse-cluster">${cluster.getChildCount()}</div>`,
@@ -1965,7 +1967,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-clusters-2026-06-11-v1
+bisses-ui-clusters-2026-06-14-v2
 
 Générer le site :
 python build_bisses.py
@@ -2006,7 +2008,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-ui-clusters-2026-06-11-v1")
+    print("Version : bisses-ui-clusters-2026-06-14-v2")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
