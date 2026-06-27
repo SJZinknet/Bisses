@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-27-v5");
+console.log("Bisses build bisses-ui-clusters-2026-06-27-v5.1");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -664,6 +664,22 @@ function representativePointForBisse(geojson) {
   return b.isValid() ? b.getCenter() : null;
 }
 
+function bisseActionChipPoint(geojson) {
+  const b = geoBounds(geojson);
+  if (b.isValid()) {
+    const size = map.getSize();
+    const nw = map.latLngToContainerPoint(b.getNorthWest());
+    const ne = map.latLngToContainerPoint(b.getNorthEast());
+
+    const x = Math.max(52, Math.min(size.x - 52, (nw.x + ne.x) / 2));
+    const y = Math.max(76, Math.min(size.y - 80, nw.y - 6));
+
+    return map.containerPointToLatLng(L.point(x, y));
+  }
+
+  return representativePointForBisse(geojson);
+}
+
 function selectedBisseTitle(data) {
   const info = data.catalogue.bisse_info || {};
   return info.title || data.item.title || "Bisse";
@@ -689,7 +705,6 @@ function bisseActionChipHtml(data) {
     <div class="bisse-action-chip">
       <span class="bisse-action-title">${escapeHtml(title)}</span>
       ${photoButton}
-      <span class="bisse-action-tail" aria-hidden="true"></span>
     </div>
   `;
 }
@@ -717,7 +732,7 @@ function bindBisseActionChipEvents() {
 function showBisseActionChip(data) {
   removeBisseActionChip();
 
-  const point = representativePointForBisse(data.geojson);
+  const point = bisseActionChipPoint(data.geojson);
   if (!point) return;
 
   state.bisseActionMarker = L.marker(point, {
