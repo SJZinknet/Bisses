@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-clusters-2026-06-14-v3"
+# BUILD_VERSION = "bisses-ui-clusters-2026-06-27-v4"
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-ui-clusters-2026-06-14-v3</div>
+          <div class="build-version">bisses-ui-clusters-2026-06-27-v4</div>
         </div>
 
         <div class="toolbar">
@@ -658,6 +658,10 @@ body.side-panel-open .side-panel {
   color: #1f2d24;
 }
 
+.map-popup {
+  box-sizing: border-box;
+}
+
 .map-popup h3 {
   margin: 0 0 7px;
   font-size: 1rem;
@@ -673,12 +677,36 @@ body.side-panel-open .side-panel {
   font-size: .88rem;
 }
 
-.map-popup img {
+.photo-popup {
+  width: 300px;
+  max-width: calc(100vw - 76px);
+}
+
+.photo-popup-media {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(31, 45, 36, .07);
+}
+
+.photo-popup-media img {
   display: block;
-  width: 180px;
-  max-width: 100%;
-  border-radius: 12px;
-  margin-bottom: 9px;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.photo-popup h3 {
+  margin-bottom: 5px;
+}
+
+.photo-popup p {
+  max-height: 130px;
+  overflow: auto;
 }
 
 @media (max-width: 900px) {
@@ -747,7 +775,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-14-v3");
+console.log("Bisses build bisses-ui-clusters-2026-06-27-v4");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -1373,6 +1401,7 @@ function refreshMarkerVisibility() {
     }
   } else {
     mapEl.classList.remove("segments-mode");
+    state.photoLayer.clearLayers();
     if (!map.hasLayer(state.bisseMarkers)) {
       state.bisseMarkers.addTo(map);
     }
@@ -1473,7 +1502,7 @@ function bindSegmentInteraction(layer, feature) {
     const id = feature.properties.__bisse_id;
     if (id) {
       map.closePopup();
-      selectBisse(id, { fit: true });
+      selectBisse(id, { fit: true, showPhotos: true });
     }
   });
 }
@@ -1666,6 +1695,37 @@ function photoIcon() {
   });
 }
 
+function photoPopupWidth() {
+  const viewportWidth = typeof window === "undefined" ? 1200 : window.innerWidth;
+  return Math.max(220, Math.min(300, viewportWidth - 76));
+}
+
+function photoPopupOptions() {
+  const width = photoPopupWidth();
+
+  return {
+    minWidth: width,
+    maxWidth: width,
+    autoPan: true,
+    closeButton: true,
+    className: "photo-leaflet-popup"
+  };
+}
+
+function photoPopupContent(photo) {
+  return `
+    <div class="map-popup photo-popup">
+      ${photo.filename_web ? `
+        <div class="photo-popup-media">
+          <img src="${escapeHtml(photo.filename_web)}" alt="">
+        </div>
+      ` : ""}
+      <h3>${escapeHtml(photo.title || "Photo")}</h3>
+      ${photo.description ? `<p class="popup-muted">${escapeHtml(photo.description)}</p>` : ""}
+    </div>
+  `;
+}
+
 function bindListButtons() {
   document.querySelectorAll(".bisse-button").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1813,17 +1873,7 @@ function renderPhotos(data) {
       offset: [0, -8]
     });
 
-    marker.bindPopup(`
-      <div class="map-popup">
-        ${photo.filename_web ? `<img src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
-        <h3>${escapeHtml(photo.title || "Photo")}</h3>
-        ${photo.description ? `<p class="popup-muted">${escapeHtml(photo.description)}</p>` : ""}
-      </div>
-    `, {
-      maxWidth: 230,
-      autoPan: true,
-      closeButton: true
-    });
+    marker.bindPopup(photoPopupContent(photo), photoPopupOptions());
 
     marker.on("click", () => {
       clearLeafletFocus();
@@ -1915,15 +1965,9 @@ function renderPanel(data) {
       }
 
       if (isNum(photo.lat) && isNum(photo.lon)) {
-        L.popup({ maxWidth: 230, autoPan: true, closeButton: true })
+        L.popup(photoPopupOptions())
           .setLatLng([photo.lat, photo.lon])
-          .setContent(`
-            <div class="map-popup">
-              ${photo.filename_web ? `<img src="${escapeHtml(photo.filename_web)}" alt="">` : ""}
-              <h3>${escapeHtml(photo.title || "Photo")}</h3>
-              ${photo.description ? `<p class="popup-muted">${escapeHtml(photo.description)}</p>` : ""}
-            </div>
-          `)
+          .setContent(photoPopupContent(photo))
           .openOn(map);
       }
     });
@@ -1944,7 +1988,12 @@ async function selectBisse(id, options = {}) {
     const data = await loadBisse(item);
     renderPanel(data);
     refreshLegend();
-    renderPhotos(data);
+
+    if (options.showPhotos === true) {
+      renderPhotos(data);
+    } else {
+      state.photoLayer.clearLayers();
+    }
 
     if (options.fit !== false) {
       fitBisseDataAfterPanel(data);
@@ -2033,7 +2082,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-clusters-2026-06-14-v3
+bisses-ui-clusters-2026-06-27-v4
 
 Générer le site :
 python build_bisses.py
@@ -2074,7 +2123,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-ui-clusters-2026-06-14-v3")
+    print("Version : bisses-ui-clusters-2026-06-27-v4")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
