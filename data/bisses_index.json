@@ -72,6 +72,14 @@
     "segments": "data/bisses/bisse-de-vercorin/segments.geojson"
   },
   {
+    "id": "bisse-de-vercorin",
+    "title": "Bisse de Vercorin",
+    "region": "Anniviers",
+    "commune": "Chalais",
+    "catalogue": "data/bisses/bisse-de-vercorin/catalogue.json",
+    "segments": "data/bisses/bisse-de-vercorin/segments.geojson"
+  },
+  {
     "id": "bisse-roux",
     "title": "Bisse Roux",
     "region": "Anniviers",
