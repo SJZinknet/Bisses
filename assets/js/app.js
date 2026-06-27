@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-27-v4");
+console.log("Bisses build bisses-ui-clusters-2026-06-27-v5");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -88,6 +88,9 @@ const state = {
   index: [],
   cache: new Map(),
   selectedId: null,
+  selectedData: null,
+  photoMarkersVisible: false,
+  bisseActionMarker: null,
   base: "carto",
   currentStepKey: "",
   currentSegmentsKey: "",
@@ -597,6 +600,172 @@ function boundsWithPhotos(bounds, photos) {
   return bounds;
 }
 
+function mappablePhotos(catalogue) {
+  return selectedPhotos(catalogue).filter((p) => isNum(p.lat) && isNum(p.lon));
+}
+
+function interpolateLinePoint(coords, fraction = 0.5) {
+  if (!coords.length) return null;
+  if (coords.length === 1) return L.latLng(coords[0][1], coords[0][0]);
+
+  const total = approximateLineLength(coords);
+  if (!total) {
+    const first = coords[0];
+    return L.latLng(first[1], first[0]);
+  }
+
+  const target = total * fraction;
+  let passed = 0;
+
+  for (let i = 1; i < coords.length; i += 1) {
+    const a = coords[i - 1];
+    const b = coords[i];
+    const length = approximateLineLength([a, b]);
+
+    if (!length) continue;
+
+    if (passed + length >= target) {
+      const ratio = (target - passed) / length;
+      const lon = a[0] + ((b[0] - a[0]) * ratio);
+      const lat = a[1] + ((b[1] - a[1]) * ratio);
+      return L.latLng(lat, lon);
+    }
+
+    passed += length;
+  }
+
+  const last = coords[coords.length - 1];
+  return L.latLng(last[1], last[0]);
+}
+
+function representativePointForBisse(geojson) {
+  let bestLine = null;
+  let bestLength = -1;
+
+  for (const feature of geojson.features || []) {
+    const geometry = feature.geometry || {};
+    const lines = geometry.type === "LineString"
+      ? [geometry.coordinates || []]
+      : (geometry.type === "MultiLineString" ? (geometry.coordinates || []) : []);
+
+    for (const line of lines) {
+      const length = approximateLineLength(line);
+      if (length > bestLength) {
+        bestLength = length;
+        bestLine = line;
+      }
+    }
+  }
+
+  const point = bestLine ? interpolateLinePoint(bestLine, 0.52) : null;
+  if (point) return point;
+
+  const b = geoBounds(geojson);
+  return b.isValid() ? b.getCenter() : null;
+}
+
+function selectedBisseTitle(data) {
+  const info = data.catalogue.bisse_info || {};
+  return info.title || data.item.title || "Bisse";
+}
+
+function removeBisseActionChip() {
+  if (state.bisseActionMarker) {
+    map.removeLayer(state.bisseActionMarker);
+    state.bisseActionMarker = null;
+  }
+}
+
+function bisseActionChipHtml(data) {
+  const title = selectedBisseTitle(data);
+  const count = mappablePhotos(data.catalogue).length;
+  const photoButton = count ? `
+    <button class="bisse-action-button ${state.photoMarkersVisible ? "is-active" : ""}" type="button" data-action="toggle-photos">
+      ${state.photoMarkersVisible ? "Masquer photos" : `Photos · ${count}`}
+    </button>
+  ` : "";
+
+  return `
+    <div class="bisse-action-chip">
+      <span class="bisse-action-title">${escapeHtml(title)}</span>
+      ${photoButton}
+      <span class="bisse-action-tail" aria-hidden="true"></span>
+    </div>
+  `;
+}
+
+function bindBisseActionChipEvents() {
+  if (!state.bisseActionMarker) return;
+
+  const el = state.bisseActionMarker.getElement();
+  if (!el) return;
+
+  L.DomEvent.disableClickPropagation(el);
+  L.DomEvent.disableScrollPropagation(el);
+
+  const button = el.querySelector('[data-action="toggle-photos"]');
+  if (!button) return;
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearLeafletFocus();
+    toggleSelectedPhotos();
+  });
+}
+
+function showBisseActionChip(data) {
+  removeBisseActionChip();
+
+  const point = representativePointForBisse(data.geojson);
+  if (!point) return;
+
+  state.bisseActionMarker = L.marker(point, {
+    interactive: true,
+    keyboard: false,
+    zIndexOffset: 1200,
+    icon: L.divIcon({
+      className: "",
+      html: bisseActionChipHtml(data),
+      iconSize: [1, 1],
+      iconAnchor: [0, 0]
+    })
+  }).addTo(map);
+
+  window.setTimeout(bindBisseActionChipEvents, 0);
+}
+
+function refreshBisseActionChip() {
+  if (state.selectedData) {
+    showBisseActionChip(state.selectedData);
+  }
+}
+
+function setSelectedPhotosVisible(visible) {
+  if (!state.selectedData) return;
+
+  state.photoMarkersVisible = Boolean(visible) && roundedZoom() >= SHOW_SYNTHETIC_TRACES_AT_ZOOM;
+  state.photoLayer.clearLayers();
+  map.closePopup();
+
+  if (state.photoMarkersVisible) {
+    renderPhotos(state.selectedData);
+  }
+
+  refreshBisseActionChip();
+}
+
+function toggleSelectedPhotos() {
+  setSelectedPhotosVisible(!state.photoMarkersVisible);
+}
+
+function clearSelectedBisseMapControls() {
+  state.selectedData = null;
+  state.photoMarkersVisible = false;
+  state.photoLayer.clearLayers();
+  removeBisseActionChip();
+}
+
 function fitBisseData(data) {
   const b = boundsWithPhotos(geoBounds(data.geojson), selectedPhotos(data.catalogue));
   if (!b.isValid()) return;
@@ -627,7 +796,13 @@ function refreshMarkerVisibility() {
     }
   } else {
     mapEl.classList.remove("segments-mode");
-    state.photoLayer.clearLayers();
+    if (state.photoMarkersVisible) {
+      state.photoMarkersVisible = false;
+      state.photoLayer.clearLayers();
+      refreshBisseActionChip();
+    } else {
+      state.photoLayer.clearLayers();
+    }
     if (!map.hasLayer(state.bisseMarkers)) {
       state.bisseMarkers.addTo(map);
     }
@@ -728,7 +903,7 @@ function bindSegmentInteraction(layer, feature) {
     const id = feature.properties.__bisse_id;
     if (id) {
       map.closePopup();
-      selectBisse(id, { fit: true, showPhotos: true });
+      selectBisse(id, { fit: true });
     }
   });
 }
@@ -923,7 +1098,7 @@ function photoIcon() {
 
 function photoPopupWidth() {
   const viewportWidth = typeof window === "undefined" ? 1200 : window.innerWidth;
-  return Math.max(220, Math.min(300, viewportWidth - 76));
+  return Math.max(240, Math.min(320, viewportWidth - 76));
 }
 
 function photoPopupOptions() {
@@ -1207,18 +1382,22 @@ async function selectBisse(id, options = {}) {
   if (!item) return;
 
   state.selectedId = id;
+  state.selectedData = null;
+  state.photoMarkersVisible = false;
   clearSelectedPhotosAndLegend();
+  removeBisseActionChip();
   showStatus("Chargement du bisse…");
 
   try {
     const data = await loadBisse(item);
+    state.selectedData = data;
     renderPanel(data);
     refreshLegend();
+    state.photoLayer.clearLayers();
+    showBisseActionChip(data);
 
     if (options.showPhotos === true) {
-      renderPhotos(data);
-    } else {
-      state.photoLayer.clearLayers();
+      setSelectedPhotosVisible(true);
     }
 
     if (options.fit !== false) {
@@ -1242,6 +1421,7 @@ async function selectBisse(id, options = {}) {
 
 function resetValais() {
   state.selectedId = null;
+  clearSelectedBisseMapControls();
   clearSelectedPhotosAndLegend();
   closeContext();
   closePanel();
