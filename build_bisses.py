@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-clusters-2026-06-27-v5"
+# BUILD_VERSION = "bisses-ui-clusters-2026-06-27-v5.1.1"
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-ui-clusters-2026-06-27-v5</div>
+          <div class="build-version">bisses-ui-clusters-2026-06-27-v5.1</div>
         </div>
 
         <div class="toolbar">
@@ -651,37 +651,37 @@ body.side-panel-open .side-panel {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  max-width: min(370px, calc(100vw - 92px));
-  padding: 8px 10px;
+  gap: 6px;
+  max-width: min(320px, calc(100vw - 96px));
+  padding: 6px 8px;
   border: 1px solid rgba(66, 58, 43, .18);
-  border-radius: 999px;
+  border-radius: 18px;
   background: rgba(255, 250, 241, .96);
   color: #1f2d24;
-  box-shadow: 0 12px 34px rgba(20, 30, 22, .20);
+  box-shadow: 0 10px 24px rgba(20, 30, 22, .16);
   backdrop-filter: blur(8px);
-  transform: translate(-50%, calc(-100% - 18px));
+  transform: translate(-50%, 0);
   pointer-events: auto;
   white-space: nowrap;
 }
 
 .bisse-action-title {
   min-width: 0;
-  max-width: 210px;
+  max-width: 170px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 700;
-  font-size: .9rem;
+  font-size: .85rem;
 }
 
 .bisse-action-button {
   border: 1px solid rgba(66, 58, 43, .18);
   border-radius: 999px;
-  padding: 5px 9px;
+  padding: 4px 8px;
   background: #fff;
   color: #1f2d24;
   cursor: pointer;
-  font-size: .84rem;
+  font-size: .8rem;
   line-height: 1.1;
 }
 
@@ -694,27 +694,15 @@ body.side-panel-open .side-panel {
   color: #fff;
 }
 
-.bisse-action-tail {
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 12px;
-  height: 12px;
-  border-right: 1px solid rgba(66, 58, 43, .18);
-  border-bottom: 1px solid rgba(66, 58, 43, .18);
-  background: rgba(255, 250, 241, .96);
-  transform: translateX(-50%) rotate(45deg);
-}
-
 @media (max-width: 760px) {
   .bisse-action-chip {
-    max-width: calc(100vw - 52px);
-    border-radius: 18px;
+    max-width: calc(100vw - 56px);
+    border-radius: 16px;
     white-space: normal;
   }
 
   .bisse-action-title {
-    max-width: 170px;
+    max-width: 150px;
   }
 }
 
@@ -850,7 +838,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-27-v5");
+console.log("Bisses build bisses-ui-clusters-2026-06-27-v5.1");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -1513,6 +1501,22 @@ function representativePointForBisse(geojson) {
   return b.isValid() ? b.getCenter() : null;
 }
 
+function bisseActionChipPoint(geojson) {
+  const b = geoBounds(geojson);
+  if (b.isValid()) {
+    const size = map.getSize();
+    const nw = map.latLngToContainerPoint(b.getNorthWest());
+    const ne = map.latLngToContainerPoint(b.getNorthEast());
+
+    const x = Math.max(52, Math.min(size.x - 52, (nw.x + ne.x) / 2));
+    const y = Math.max(76, Math.min(size.y - 80, nw.y - 6));
+
+    return map.containerPointToLatLng(L.point(x, y));
+  }
+
+  return representativePointForBisse(geojson);
+}
+
 function selectedBisseTitle(data) {
   const info = data.catalogue.bisse_info || {};
   return info.title || data.item.title || "Bisse";
@@ -1538,7 +1542,6 @@ function bisseActionChipHtml(data) {
     <div class="bisse-action-chip">
       <span class="bisse-action-title">${escapeHtml(title)}</span>
       ${photoButton}
-      <span class="bisse-action-tail" aria-hidden="true"></span>
     </div>
   `;
 }
@@ -1566,7 +1569,7 @@ function bindBisseActionChipEvents() {
 function showBisseActionChip(data) {
   removeBisseActionChip();
 
-  const point = representativePointForBisse(data.geojson);
+  const point = bisseActionChipPoint(data.geojson);
   if (!point) return;
 
   state.bisseActionMarker = L.marker(point, {
@@ -2337,7 +2340,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-clusters-2026-06-27-v5
+bisses-ui-clusters-2026-06-27-v5.1
 
 Générer le site :
 python build_bisses.py
@@ -2378,7 +2381,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-ui-clusters-2026-06-27-v5")
+    print("Version : bisses-ui-clusters-2026-06-27-v5.1")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
