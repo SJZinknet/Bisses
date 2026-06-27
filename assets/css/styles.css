@@ -586,37 +586,37 @@ body.side-panel-open .side-panel {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  max-width: min(370px, calc(100vw - 92px));
-  padding: 8px 10px;
+  gap: 6px;
+  max-width: min(320px, calc(100vw - 96px));
+  padding: 6px 8px;
   border: 1px solid rgba(66, 58, 43, .18);
-  border-radius: 999px;
+  border-radius: 18px;
   background: rgba(255, 250, 241, .96);
   color: #1f2d24;
-  box-shadow: 0 12px 34px rgba(20, 30, 22, .20);
+  box-shadow: 0 10px 24px rgba(20, 30, 22, .16);
   backdrop-filter: blur(8px);
-  transform: translate(-50%, calc(-100% - 18px));
+  transform: translate(-50%, 0);
   pointer-events: auto;
   white-space: nowrap;
 }
 
 .bisse-action-title {
   min-width: 0;
-  max-width: 210px;
+  max-width: 170px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 700;
-  font-size: .9rem;
+  font-size: .85rem;
 }
 
 .bisse-action-button {
   border: 1px solid rgba(66, 58, 43, .18);
   border-radius: 999px;
-  padding: 5px 9px;
+  padding: 4px 8px;
   background: #fff;
   color: #1f2d24;
   cursor: pointer;
-  font-size: .84rem;
+  font-size: .8rem;
   line-height: 1.1;
 }
 
@@ -629,27 +629,15 @@ body.side-panel-open .side-panel {
   color: #fff;
 }
 
-.bisse-action-tail {
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 12px;
-  height: 12px;
-  border-right: 1px solid rgba(66, 58, 43, .18);
-  border-bottom: 1px solid rgba(66, 58, 43, .18);
-  background: rgba(255, 250, 241, .96);
-  transform: translateX(-50%) rotate(45deg);
-}
-
 @media (max-width: 760px) {
   .bisse-action-chip {
-    max-width: calc(100vw - 52px);
-    border-radius: 18px;
+    max-width: calc(100vw - 56px);
+    border-radius: 16px;
     white-space: normal;
   }
 
   .bisse-action-title {
-    max-width: 170px;
+    max-width: 150px;
   }
 }
 
