@@ -1,0 +1,81 @@
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "bisse-de-salins-2026",
+    "title": "Bisse de Salins",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "bisse-de-salins",
+    "title": "Bisse de Salins",
+    "region": "Nendaz",
+    "commune": "Nendaz, Sion",
+    "description": "Le bisse de Salins est antérieur à 1436.  Il prend son eau à la Printse, vers Saclentse à 1175 m pour la conduire à Salins, puis au-dessus de Maragnenaz. Aujourd’hui partiellement canalisé, le bisse sert toujours à l’arrosage de belles terres agricoles.",
+    "itinerary": "1) Depuis la gare de Sion, prendre le bus en direction de Beuson Village. Une fois arrivé, suivre la route située à côté de l’église et monter pendant environ 45 minutes jusqu’au début du sentier pédestre du bisse. L’itinéraire suit ensuite le bisse en descente durant environ 1h30 jusqu’à atteindre une place située près d’un grand chalet. De là, emprunter la route qui monte jusqu’à l’église de La Vernaz. À La Vernaz, il est possible de reprendre le bus à l’arrêt “La Vernaz, VS” pour retourner à Sion. Il est également possible de poursuivre l’itinéraire en empruntant la seconde partie du bisse, moins entretenue et plus raide. Pour cela, descendre jusqu’au stade de Chaillen, où se trouve la suite du bisse. Celui-ci mène jusqu’au-dessus de Champsec. Depuis là, redescendre vers la vallée en empruntant les routes de vignes jusqu’à rejoindre le Pont de Bramois. Un arrêt de bus “Bramois, Petit Champsec” permet ensuite de retourner à Sion.\n\n2) En boucle avec le bisse de Baar De Pravidondaz (arrêt postal et parking), suivre la route jusqu’après l’épingle et prendre un joli chemin grimpant en lacets. Passer à Salins et continuer jusqu’au bisse de Salins. Le suivre, à droite, jusqu’à Sarclentse, non loin de la prise d’eau. Descendre une petite route le long de la Printse, traverser Beuson et continuer,(indicateur bisse de Baar). Après le Château de Brignon, reprendre la descente sous Brignon et rejoindre le bisse de Baar près d’une ferme (il faut traverser le ferme pour rejoindre le chemin du bisse). On suit le bisse jusqu’à Pravidondaz. 4 h 30.",
+    "length_km": null,
+    "altitude_min_m": 1002,
+    "altitude_max_m": 1175,
+    "difficulty": "T1",
+    "marked_trail": true,
+    "state": "part. canalisé",
+    "tags": [
+      "chéneau"
+    ],
+    "communes": "Nendaz, Sion"
+  },
+  "segment_categories": [
+    {
+      "id": "unknown",
+      "name": "Non classé",
+      "file_code": "NON_CLASSE",
+      "color": "#8e44ad"
+    },
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
+    },
+    {
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
+    }
+  ],
+  "photos": [],
+  "external_resources": [],
+  "inventory_info": {
+    "nom": "Bisse de Salins",
+    "slug": "bisse-de-salins",
+    "url": "https://bisses-valais.ch/bisses/bisse-de-salins/",
+    "description": "Le bisse de Salins est antérieur à 1436.  Il prend son eau à la Printse, vers Saclentse à 1175 m pour la conduire à Salins, puis au-dessus de Maragnenaz. Aujourd’hui partiellement canalisé, le bisse sert toujours à l’arrosage de belles terres agricoles.",
+    "itineraire": "1) Depuis la gare de Sion, prendre le bus en direction de Beuson Village. Une fois arrivé, suivre la route située à côté de l’église et monter pendant environ 45 minutes jusqu’au début du sentier pédestre du bisse. L’itinéraire suit ensuite le bisse en descente durant environ 1h30 jusqu’à atteindre une place située près d’un grand chalet. De là, emprunter la route qui monte jusqu’à l’église de La Vernaz. À La Vernaz, il est possible de reprendre le bus à l’arrêt “La Vernaz, VS” pour retourner à Sion. Il est également possible de poursuivre l’itinéraire en empruntant la seconde partie du bisse, moins entretenue et plus raide. Pour cela, descendre jusqu’au stade de Chaillen, où se trouve la suite du bisse. Celui-ci mène jusqu’au-dessus de Champsec. Depuis là, redescendre vers la vallée en empruntant les routes de vignes jusqu’à rejoindre le Pont de Bramois. Un arrêt de bus “Bramois, Petit Champsec” permet ensuite de retourner à Sion.\n\n2) En boucle avec le bisse de Baar De Pravidondaz (arrêt postal et parking), suivre la route jusqu’après l’épingle et prendre un joli chemin grimpant en lacets. Passer à Salins et continuer jusqu’au bisse de Salins. Le suivre, à droite, jusqu’à Sarclentse, non loin de la prise d’eau. Descendre une petite route le long de la Printse, traverser Beuson et continuer,(indicateur bisse de Baar). Après le Château de Brignon, reprendre la descente sous Brignon et rejoindre le bisse de Baar près d’une ferme (il faut traverser le ferme pour rejoindre le chemin du bisse). On suit le bisse jusqu’à Pravidondaz. 4 h 30.",
+    "region": "Nendaz",
+    "communes": "Nendaz, Sion",
+    "etat": "part. canalisé",
+    "sentier": "balisé",
+    "cotation": "T1",
+    "tags": "chéneau",
+    "longueur_km": "",
+    "altitude_haut_m": 1175,
+    "altitude_bas_m": 1002,
+    "prise_eau": "la Printse",
+    "zones_irriguees": "Salins",
+    "autres_noms": "",
+    "classement_ad": "**",
+    "sdt_numero": 247,
+    "sdt_importance": "Régional",
+    "post_modified": "",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-10T17:27:58"
+  }
+}

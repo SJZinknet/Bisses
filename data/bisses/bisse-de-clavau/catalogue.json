@@ -1,0 +1,79 @@
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "bisse-de-clavau-2026",
+    "title": "Bisse de Clavau",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "bisse-de-clavau",
+    "title": "Bisse de Clavau",
+    "region": "Liène",
+    "commune": "Ayent, Grimisuat, Sion",
+    "description": "Le bisse de Clavau a été construit en 1453 pour l'arrosage des vignes de Clavau. Le bisse est toujours en activité. Le premier tronçon passe dans un tunnel alimentant l'usine électrique de Beulet. Autrefois, le bisse de Clavau prenait sa source sur l'autre rive et traversait ensuite la Liène sur un pont de pierre qui s'est effondré vers 1913. Le cheminement dans les gorges de la Liène est superbe avec une vue plongeante sur la rivière qui a creusé des gorges remarquables. Après avoir traversé quelques pelouses steppiques, le bisse chemine entre les murs de vignes. Un chemin didactique met en valeur les richesses naturelles des lieux. Vu la proximité de la ville et la facilité du parcours, ce bisse est très fréquenté.",
+    "itinerary": "1) D'Icogne à Sion. D'Icogne (arrêt postal) descendre le chemin balisé, direction Sion. Après avoir franchi la Liène et un ruisseau on arrive à un petit barrage. C'es la prise d'eau pour l'usine de Beulet qui sert également pour le bisse. Le chemin suit le tracé de l'ancien bisse avec une magnifique vue plongeant dans les gorges de la Liène. Après la conduite forcée de l'usine, on suit le bisse à ciel ouvert au milieu du vignoble jusqu'à la chute (parking). De là, descendre un petit chemin jusqu'à la Brasserie (arrêt postal). 3 heures.\n\n2) Du Musée des Bisses à Sion.\n\nAprès la visite du musée (arrêt postal Boyre Poste), descendre le chemin balisé de Saint-Léonard jusqu'à Tsampon (- 280 m) et suivre le bisse jusqu'à Sion (2  h. 30).\n\nBuvette sur le parcours : Guérite Brûlefer",
+    "length_km": 7.5,
+    "altitude_min_m": 560,
+    "altitude_max_m": 702,
+    "difficulty": "T1",
+    "marked_trail": true,
+    "state": "part. canalisé",
+    "tags": [],
+    "communes": "Ayent, Grimisuat, Sion"
+  },
+  "segment_categories": [
+    {
+      "id": "unknown",
+      "name": "Non classé",
+      "file_code": "NON_CLASSE",
+      "color": "#8e44ad"
+    },
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
+    },
+    {
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
+    }
+  ],
+  "photos": [],
+  "external_resources": [],
+  "inventory_info": {
+    "nom": "Bisse de Clavau",
+    "slug": "bisse-de-clavau",
+    "url": "https://bisses-valais.ch/bisses/bisse-de-clavau/",
+    "description": "Le bisse de Clavau a été construit en 1453 pour l’arrosage des vignes de Clavau. Le bisse est toujours en activité. Le premier tronçon passe dans un tunnel alimentant l’usine électrique de Beulet. Autrefois, le bisse de Clavau prenait sa source sur l’autre rive et traversait ensuite la Liène sur un pont de pierre qui s’est effondré vers 1913. Le cheminement dans les gorges de la Liène est superbe avec une vue plongeante sur la rivière qui a creusé des gorges remarquables. Après avoir traversé quelques pelouses steppiques, le bisse chemine entre les murs de vignes. Un chemin didactique met en valeur les richesses naturelles des lieux. Vu la proximité de la ville et la facilité du parcours, ce bisse est très fréquenté.",
+    "itineraire": "1) D’Icogne à Sion. D’Icogne (arrêt postal) descendre le chemin balisé, direction Sion. Après avoir franchi la Liène et un ruisseau on arrive à un petit barrage. C’es la prise d’eau pour l’usine de Beulet qui sert également pour le bisse. Le chemin suit le tracé de l’ancien bisse avec une magnifique vue plongeant dans les gorges de la Liène. Après la conduite forcée de l’usine, on suit le bisse à ciel ouvert au milieu du vignoble jusqu’à la chute (parking). De là, descendre un petit chemin jusqu’à la Brasserie (arrêt postal). 3 heures.\n\n2) Du Musée des Bisses à Sion.\n\nAprès la visite du musée (arrêt postal Boyre Poste), descendre le chemin balisé de Saint-Léonard jusqu’à Tsampon (- 280 m) et suivre le bisse jusqu’à Sion (2  h. 30).\n\nBuvette sur le parcours : Guérite Brûlefer",
+    "region": "Liène",
+    "communes": "Ayent, Grimisuat, Sion",
+    "etat": "part. canalisé",
+    "sentier": "balisé",
+    "cotation": "T1",
+    "tags": "",
+    "longueur_km": 7.5,
+    "altitude_haut_m": 702,
+    "altitude_bas_m": 560,
+    "prise_eau": "Les Hombes",
+    "zones_irriguees": "Vignoble d'Ayent, Grimisuat et Sion.",
+    "autres_noms": "Clavoz, bis dè Cla-ô",
+    "classement_ad": "***",
+    "sdt_numero": 223,
+    "sdt_importance": "Cantonal",
+    "post_modified": "",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-10T17:27:58"
+  }
+}

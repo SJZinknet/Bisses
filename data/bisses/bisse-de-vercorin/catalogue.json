@@ -1,0 +1,79 @@
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "bisse-de-vercorin-2026",
+    "title": "Bisse de Vercorin",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "bisse-de-vercorin",
+    "title": "Bisse de Vercorin",
+    "region": "Anniviers",
+    "commune": "Chalais",
+    "description": "Le bisse de Vercorin date de la fin du 14e siècle. Ce bisse prend l’eau dans la Rèche à 1685 m pour la conduire sur Vercorin. Toujours en eau, il est géré et entretenu par un consortage. Vous y verrez diverses techniques de construction comme les chéneaux en boix, le tretschbord et de multiples tronçons où le canal est naturel, en terre. Le bisse de Vercorin offre une magnifique promenade et peut servir de porte d’entrée au Vallon de Réchy, site protégé, sans voiture où s’est développé une biodiversité exceptionnelle.\n\nLe bisse finit sa course sur les hauts de Vercorin avant la route de Sigeroula, puis une partie de son eau est captée dans un autre canal 20 mètres plus bas. Cette dernière partie du bisse est nommée le Bisse de Savanne-Bellecrête, et vous y trouverez des panneaux didactiques sur le thème des abeilles.\n\nLe bisse sillonne majoritairement dans la forêt et est donc idéal pour une promenade ombragée en cas de forte chaleur.",
+    "itinerary": "1) Pour simplement se promener le long du bisse :\n\nDe Vercorin (téléphérique), se rendre au centre du village, puis grimper vers le bisse en passant par le chemin de Tracuit. Une fois arrivés au bisse, suivez sa trace jusqu’à “La Lé” où vous trouverez une buvette. Au début le chemin grimpe bien… puis dès la cabane du gardien il chemine à plat. Pour voir la prise d’eau, suivez le canal un peu plus haut que la buvette jusqu’à ce que vous voyiez son intersection avec la Rèche. Retour à Vercorin par le même itinéraire, avec la possibilité d’emprunter une route en gravier depuis le Refuge du Bisse pour adoucir la descente.\n\n2) Pour une randonnée de montagne :\n\nDe Vercorin (téléphérique), se rendre au centre du village, puis grimper vers le bisse en passant par le chemin de Tracuit. Une fois arrivés au bisse, suivez sa trace jusqu’à “La Lé” où vous trouverez une buvette. Pour voir la prise d’eau, faites un aller-retour en suivant le canal un peu plus haut jusqu’à ce que vous voyiez son intersection avec la Rèche. Depuis la buvette, montez 500m en direction de l’Ar du Tsan pour y découvrir un paysage protégé marécageux, puis continuez à monter vers le Crêt du Midi. Vous pouvez ensuite redescendre à Vercorin en suivant les les panneaux de randonnée, ou prendre la télécabine qui vous ramènera rapidement dans le village.",
+    "length_km": null,
+    "altitude_min_m": 1446,
+    "altitude_max_m": 1685,
+    "difficulty": "T2",
+    "marked_trail": true,
+    "state": "tot. en eau",
+    "tags": [],
+    "communes": "Chalais"
+  },
+  "segment_categories": [
+    {
+      "id": "unknown",
+      "name": "Non classé",
+      "file_code": "NON_CLASSE",
+      "color": "#8e44ad"
+    },
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
+    },
+    {
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
+    }
+  ],
+  "photos": [],
+  "external_resources": [],
+  "inventory_info": {
+    "nom": "Bisse de Vercorin",
+    "slug": "bisse-de-vercorin",
+    "url": "https://bisses-valais.ch/bisses/bisse-de-vercorin/",
+    "description": "Le bisse de Vercorin date de la fin du 14e siècle. Ce bisse prend l’eau dans la Rèche à 1685 m pour la conduire sur Vercorin. Toujours en eau, il est géré et entretenu par un consortage. Vous y verrez diverses techniques de construction comme les chéneaux en boix, le tretschbord et de multiples tronçons où le canal est naturel, en terre. Le bisse de Vercorin offre une magnifique promenade et peut servir de porte d’entrée au Vallon de Réchy, site protégé, sans voiture où s’est développé une biodiversité exceptionnelle.\n\nLe bisse finit sa course sur les hauts de Vercorin avant la route de Sigeroula, puis une partie de son eau est captée dans un autre canal 20 mètres plus bas. Cette dernière partie du bisse est nommée le Bisse de Savanne-Bellecrête, et vous y trouverez des panneaux didactiques sur le thème des abeilles.\n\nLe bisse sillonne majoritairement dans la forêt et est donc idéal pour une promenade ombragée en cas de forte chaleur.",
+    "itineraire": "1) Pour simplement se promener le long du bisse :\n\nDe Vercorin (téléphérique), se rendre au centre du village, puis grimper vers le bisse en passant par le chemin de Tracuit. Une fois arrivés au bisse, suivez sa trace jusqu’à “La Lé” où vous trouverez une buvette. Au début le chemin grimpe bien… puis dès la cabane du gardien il chemine à plat. Pour voir la prise d’eau, suivez le canal un peu plus haut que la buvette jusqu’à ce que vous voyiez son intersection avec la Rèche. Retour à Vercorin par le même itinéraire, avec la possibilité d’emprunter une route en gravier depuis le Refuge du Bisse pour adoucir la descente.\n\n2) Pour une randonnée de montagne :\n\nDe Vercorin (téléphérique), se rendre au centre du village, puis grimper vers le bisse en passant par le chemin de Tracuit. Une fois arrivés au bisse, suivez sa trace jusqu’à “La Lé” où vous trouverez une buvette. Pour voir la prise d’eau, faites un aller-retour en suivant le canal un peu plus haut jusqu’à ce que vous voyiez son intersection avec la Rèche. Depuis la buvette, montez 500m en direction de l’Ar du Tsan pour y découvrir un paysage protégé marécageux, puis continuez à monter vers le Crêt du Midi. Vous pouvez ensuite redescendre à Vercorin en suivant les les panneaux de randonnée, ou prendre la télécabine qui vous ramènera rapidement dans le village.",
+    "region": "Anniviers",
+    "communes": "Chalais",
+    "etat": "tot. en eau",
+    "sentier": "balisé",
+    "cotation": "T2",
+    "tags": "",
+    "longueur_km": "",
+    "altitude_haut_m": 1685,
+    "altitude_bas_m": 1446,
+    "prise_eau": "la Rèche à 1685 m",
+    "zones_irriguees": "",
+    "autres_noms": "",
+    "classement_ad": "**",
+    "sdt_numero": 201,
+    "sdt_importance": "Cantonal",
+    "post_modified": "",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-10T17:27:59"
+  }
+}
