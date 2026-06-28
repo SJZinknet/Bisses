@@ -1,0 +1,100 @@
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "bisse-dergisch-2026",
+    "title": "Bisse d’Ergisch",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "bisse-dergisch",
+    "title": "Bisse d’Ergisch",
+    "region": "Turtmann",
+    "commune": "Ergisch",
+    "description": "Le bisse d’Ergisch prend son eau à Hübschweidi dans la Turtmänna pour l’amener au-dessus du village d’Ergisch. De là, une branche s’écoule jusqu’à Zen Ägerdu sous le nom de Dorfwasser. Une autre branche à 1220 m, coule vers Obermatten sous le nom de Alte, et la 3ème branche suit la route supérieure jusqu’au village. Cette dernière partie est sous tuyaux. La partie supérieure du bisse est à ciel ouvert et est construit en bonne partie dans les rochers. Son parcours est facile et magnifique. La prise d’eau a été refaite et le bisse est sous tuyaux sur 300 mètres.",
+    "itinerary": "Découverte du bisse d’Ergisch et Fätschi.\n\nAttention, en 2018 une grosse avalanche a ravagé le vallon, coupé le bisse et détruit le pont. S’adresser à l’office du tourisme d’Ergisch pour savoir quand les travaux seront finis : 027 932 28 15.\n\nDu village d’Ergisch, prendre le chemin qui grimpe au-dessus du village, direction sud-ouest et qui est balisé “Wasserleite”. A 1200 m. on rejoint le bisse et on le suit jusqu’à la Turtmänna que l’on franchit sur un petit pont. Un bon chemin permet de descendre le long de la vallée jusqu’à 958 m où on rejoint le bisse Fätschi qui coule vers Unterems.  On remonte le bisse jusqu’à la prise où un nouveau pont permet de traverser la Turtmänna. Un chemin assez raide permet de remonter vers Ergisch. Compter 3h30 pour le circuit.",
+    "length_km": 4.5,
+    "altitude_min_m": 1100,
+    "altitude_max_m": 1365,
+    "difficulty": "T2",
+    "marked_trail": true,
+    "state": "tot. en eau",
+    "tags": [
+      "mur"
+    ],
+    "communes": "Ergisch"
+  },
+  "segment_categories": [
+    {
+      "id": "unknown",
+      "name": "Non classé",
+      "file_code": "NON_CLASSE",
+      "color": "#8e44ad"
+    },
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
+    },
+    {
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
+    }
+  ],
+  "photos": [
+    {
+      "filename_web": "media/bisse-dergisch/photo_001_web.jpg",
+      "title": "Réservoir et déssableur",
+      "description": "Le tuyau débouche dans le déssableur, une partie de l'eau des déchargée dans le torrent, et l'autre part dans le bisse.",
+      "date": "2026-06-26T09:03:39+00:00",
+      "lat": 46.26667933911852,
+      "lon": 7.711207025762963,
+      "platform_order": 1
+    },
+    {
+      "filename_web": "media/bisse-dergisch/photo_002_web.jpg",
+      "title": "Tuyau de prise d'eau",
+      "description": "",
+      "date": "2026-06-26T09:07:44+00:00",
+      "lat": 46.26579500306327,
+      "lon": 7.710683296620409,
+      "platform_order": 2
+    }
+  ],
+  "external_resources": [],
+  "inventory_info": {
+    "nom": "Bisse d’Ergisch",
+    "slug": "bisse-dergisch",
+    "url": "https://bisses-valais.ch/bisses/bisse-dergisch/",
+    "description": "Le bisse d’Ergisch prend son eau à Hübschweidi dans la Turtmänna pour l’amener au-dessus du village d’Ergisch. De là, une branche s’écoule jusqu’à Zen Ägerdu sous le nom de Dorfwasser. Une autre branche à 1220 m, coule vers Obermatten sous le nom de Alte, et la 3ème branche suit la route supérieure jusqu’au village. Cette dernière partie est sous tuyaux. La partie supérieure du bisse est à ciel ouvert et est construit en bonne partie dans les rochers. Son parcours est facile et magnifique. La prise d’eau a été refaite et le bisse est sous tuyaux sur 300 mètres.",
+    "itineraire": "Découverte du bisse d’Ergisch et Fätschi.\n\nAttention, en 2018 une grosse avalanche a ravagé le vallon, coupé le bisse et détruit le pont. S’adresser à l’office du tourisme d’Ergisch pour savoir quand les travaux seront finis : 027 932 28 15.\n\nDu village d’Ergisch, prendre le chemin qui grimpe au-dessus du village, direction sud-ouest et qui est balisé “Wasserleite”. A 1200 m. on rejoint le bisse et on le suit jusqu’à la Turtmänna que l’on franchit sur un petit pont. Un bon chemin permet de descendre le long de la vallée jusqu’à 958 m où on rejoint le bisse Fätschi qui coule vers Unterems.  On remonte le bisse jusqu’à la prise où un nouveau pont permet de traverser la Turtmänna. Un chemin assez raide permet de remonter vers Ergisch. Compter 3h30 pour le circuit.",
+    "region": "Turtmann",
+    "communes": "Ergisch",
+    "etat": "tot. en eau",
+    "sentier": "balisé",
+    "cotation": "T2",
+    "tags": "mur",
+    "longueur_km": 4.5,
+    "altitude_haut_m": 1365,
+    "altitude_bas_m": 1100,
+    "prise_eau": "Turtmänna",
+    "zones_irriguees": "Prairies d'Ergisch",
+    "autres_noms": "Ärgi, Ärgischer Wasserleitu",
+    "classement_ad": "**",
+    "sdt_numero": "à chercher",
+    "sdt_importance": "Cantonal",
+    "post_modified": "",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-10T16:27:34"
+  }
+}

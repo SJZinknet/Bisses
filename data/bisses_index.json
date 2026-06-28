@@ -1,98 +1,10 @@
 [
   {
-    "id": "bisse-de-clavau",
-    "title": "Bisse de Clavau",
-    "region": "Liène",
-    "commune": "Ayent, Grimisuat, Sion",
-    "catalogue": "data/bisses/bisse-de-clavau/catalogue.json",
-    "segments": "data/bisses/bisse-de-clavau/segments.geojson"
-  },
-  {
-    "id": "bisse-de-lentine",
-    "title": "Bisse de Lentine",
-    "region": "Sionne",
-    "commune": "Savièse, Sion",
-    "catalogue": "data/bisses/bisse-de-lentine/catalogue.json",
-    "segments": "data/bisses/bisse-de-lentine/segments.geojson"
-  },
-  {
-    "id": "bisse-de-st-luc",
-    "title": "Bisse de Saint-Luc",
-    "region": "Anniviers",
-    "commune": "Anniviers",
-    "catalogue": "data/bisses/bisse-de-st-luc/catalogue.json",
-    "segments": "data/bisses/bisse-de-st-luc/segments.geojson"
-  },
-  {
-    "id": "bisse-de-saint-martin",
-    "title": "Bisse de Saint-Martin",
-    "region": "Hérens",
-    "commune": "Saint-Martin",
-    "catalogue": "data/bisses/bisse-de-saint-martin/catalogue.json",
-    "segments": "data/bisses/bisse-de-saint-martin/segments.geojson"
-  },
-  {
-    "id": "bisse-de-salins",
-    "title": "Bisse de Salins",
-    "region": "Nendaz",
-    "commune": "Nendaz, Sion",
-    "catalogue": "data/bisses/bisse-de-salins/catalogue.json",
-    "segments": "data/bisses/bisse-de-salins/segments.geojson"
-  },
-  {
-    "id": "bisse-de-tsa-creta",
-    "title": "Bisse de Tsa-Crêta",
-    "region": "Hérens",
-    "commune": "Mont-Noble",
-    "catalogue": "data/bisses/bisse-de-tsa-creta/catalogue.json",
-    "segments": "data/bisses/bisse-de-tsa-creta/segments.geojson"
-  },
-  {
-    "id": "bisse-de-tsittoret",
-    "title": "Bisse de Tsittoret",
-    "region": "Raspille",
-    "commune": "Crans-Montana",
-    "catalogue": "data/bisses/bisse-de-tsittoret/catalogue.json",
-    "segments": "data/bisses/bisse-de-tsittoret/segments.geojson"
-  },
-  {
-    "id": "bisse-de-varone",
-    "title": "Bisse de Varone",
-    "region": "Raspille",
-    "commune": "Varen, Crans-Montana",
-    "catalogue": "data/bisses/bisse-de-varone/catalogue.json",
-    "segments": "data/bisses/bisse-de-varone/segments.geojson"
-  },
-  {
-    "id": "bisse-de-vercorin",
-    "title": "Bisse de Vercorin",
-    "region": "Anniviers",
-    "commune": "Chalais",
-    "catalogue": "data/bisses/bisse-de-vercorin/catalogue.json",
-    "segments": "data/bisses/bisse-de-vercorin/segments.geojson"
-  },
-  {
-    "id": "bisse-de-vercorin",
-    "title": "Bisse de Vercorin",
-    "region": "Anniviers",
-    "commune": "Chalais",
-    "catalogue": "data/bisses/bisse-de-vercorin/catalogue.json",
-    "segments": "data/bisses/bisse-de-vercorin/segments.geojson"
-  },
-  {
-    "id": "bisse-roux",
-    "title": "Bisse Roux",
-    "region": "Anniviers",
-    "commune": "Anniviers",
-    "catalogue": "data/bisses/bisse-roux/catalogue.json",
-    "segments": "data/bisses/bisse-roux/segments.geojson"
-  },
-  {
-    "id": "fiescher-wyssa",
-    "title": "Fiescher Wyssa",
-    "region": "Conches",
-    "commune": "Fieschertal",
-    "catalogue": "data/bisses/fiescher-wyssa/catalogue.json",
-    "segments": "data/bisses/fiescher-wyssa/segments.geojson"
+    "id": "bisse-dergisch",
+    "title": "Bisse d’Ergisch",
+    "region": "Turtmann",
+    "commune": "Ergisch",
+    "catalogue": "data/bisses/bisse-dergisch/catalogue.json",
+    "segments": "data/bisses/bisse-dergisch/segments.geojson"
   }
 ]
