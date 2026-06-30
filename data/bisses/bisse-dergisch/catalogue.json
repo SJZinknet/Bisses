@@ -48,28 +48,27 @@
       "name": "Abandonné",
       "file_code": "ABANDONNE",
       "color": "#ef6c00"
-    }
-  ],
-  "photos": [
-    {
-      "filename_web": "media/bisse-dergisch/photo_001_web.jpg",
-      "title": "Réservoir et déssableur",
-      "description": "Le tuyau débouche dans le déssableur, une partie de l'eau des déchargée dans le torrent, et l'autre part dans le bisse.",
-      "date": "2026-06-26T09:03:39+00:00",
-      "lat": 46.26667933911852,
-      "lon": 7.711207025762963,
-      "platform_order": 1
     },
     {
-      "filename_web": "media/bisse-dergisch/photo_002_web.jpg",
-      "title": "Tuyau de prise d'eau",
-      "description": "",
-      "date": "2026-06-26T09:07:44+00:00",
-      "lat": 46.26579500306327,
-      "lon": 7.710683296620409,
-      "platform_order": 2
+      "id": "canalabandonn",
+      "name": "Canal abandonné",
+      "file_code": "CANAL_ABANDONN",
+      "color": "#9b0000"
+    },
+    {
+      "id": "explorer",
+      "name": "Á explorer",
+      "file_code": "EXPLORER",
+      "color": "#000000"
+    },
+    {
+      "id": "explorationencours",
+      "name": "Exploration en cours",
+      "file_code": "EN_COURS",
+      "color": "#d3d3d3"
     }
   ],
+  "photos": [],
   "external_resources": [],
   "inventory_info": {
     "nom": "Bisse d’Ergisch",
