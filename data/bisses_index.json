@@ -80,6 +80,14 @@
     "segments": "data/bisses/bisse-dergisch/segments.geojson"
   },
   {
+    "id": "bisse-deuseigne",
+    "title": "Bisse d’Euseigne",
+    "region": "Hérens",
+    "commune": "Hérémence",
+    "catalogue": "data/bisses/bisse-deuseigne/catalogue.json",
+    "segments": "data/bisses/bisse-deuseigne/segments.geojson"
+  },
+  {
     "id": "bisse-roux",
     "title": "Bisse Roux",
     "region": "Anniviers",

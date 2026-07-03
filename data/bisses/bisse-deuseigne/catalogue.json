@@ -1,0 +1,91 @@
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "bisse-deuseigne-2026",
+    "title": "Bisse d’Euseigne",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "bisse-deuseigne",
+    "title": "Bisse d’Euseigne",
+    "region": "Hérens",
+    "commune": "Hérémence",
+    "description": "Le bisse d’Euseigne prenait son eau sur la rive droite de la Dixence. En 1963, à la suite d’un glissement de terrain, la prise a été modifiée. Une conduite part sur la rive gauche et traverse la rivière en siphon un peu plus bas. Le bisse est toujours en activité, mais partiellement canalisé en tuyaux.",
+    "itinerary": "De Mache, descendre vers la rivière, passer le pont de la Tsaumette, et suivre le bisse  balisé. De la Crêta, un sentier vous ramène à Euseigne",
+    "length_km": 4.3,
+    "altitude_min_m": 1000,
+    "altitude_max_m": 1295,
+    "difficulty": "T1",
+    "marked_trail": true,
+    "state": "part. canalisé",
+    "tags": [],
+    "communes": "Hérémence"
+  },
+  "segment_categories": [
+    {
+      "id": "unknown",
+      "name": "Non classé",
+      "file_code": "NON_CLASSE",
+      "color": "#8e44ad"
+    },
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
+    },
+    {
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
+    },
+    {
+      "id": "explorationencours",
+      "name": "Exploration en cours",
+      "file_code": "EN_COURS",
+      "color": "#bbbbbb"
+    },
+    {
+      "id": "canalabandonn",
+      "name": "Canal abandonné",
+      "file_code": "CANAL_ABANDONN",
+      "color": "#aa0000"
+    }
+  ],
+  "photos": [],
+  "external_resources": [],
+  "inventory_info": {
+    "nom": "Bisse d’Euseigne",
+    "slug": "bisse-deuseigne",
+    "url": "https://bisses-valais.ch/bisses/bisse-deuseigne/",
+    "description": "Le bisse d’Euseigne prenait son eau sur la rive droite de la Dixence. En 1963, à la suite d’un glissement de terrain, la prise a été modifiée. Une conduite part sur la rive gauche et traverse la rivière en siphon un peu plus bas. Le bisse est toujours en activité, mais partiellement canalisé en tuyaux.",
+    "itineraire": "De Mache, descendre vers la rivière, passer le pont de la Tsaumette, et suivre le bisse  balisé. De la Crêta, un sentier vous ramène à Euseigne",
+    "region": "Hérens",
+    "communes": "Hérémence",
+    "etat": "part. canalisé",
+    "sentier": "balisé",
+    "cotation": "T1",
+    "tags": "",
+    "longueur_km": 4.3,
+    "altitude_haut_m": 1295,
+    "altitude_bas_m": 1000,
+    "prise_eau": "Dixence",
+    "zones_irriguees": "Prairies d'Euseigne",
+    "autres_noms": "",
+    "classement_ad": "*",
+    "sdt_numero": "",
+    "sdt_importance": "",
+    "post_modified": "",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-10T16:27:34"
+  }
+}
