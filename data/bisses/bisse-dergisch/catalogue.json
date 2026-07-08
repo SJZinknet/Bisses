@@ -26,16 +26,10 @@
   },
   "segment_categories": [
     {
-      "id": "unknown",
-      "name": "Non classé",
-      "file_code": "NON_CLASSE",
-      "color": "#8e44ad"
-    },
-    {
-      "id": "open",
-      "name": "À ciel ouvert",
-      "file_code": "CIEL_OUVERT",
-      "color": "#1e88e5"
+      "id": "explorationencours",
+      "name": "Exploration en cours",
+      "file_code": "EN_COURS",
+      "color": "#808080"
     },
     {
       "id": "canalized",
@@ -44,28 +38,22 @@
       "color": "#111111"
     },
     {
-      "id": "abandoned",
-      "name": "Abandonné",
-      "file_code": "ABANDONNE",
-      "color": "#ef6c00"
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
     },
     {
       "id": "canalabandonn",
       "name": "Canal abandonné",
       "file_code": "CANAL_ABANDONN",
-      "color": "#9b0000"
+      "color": "#aa0000"
     },
     {
-      "id": "explorer",
-      "name": "Á explorer",
-      "file_code": "EXPLORER",
-      "color": "#000000"
-    },
-    {
-      "id": "explorationencours",
-      "name": "Exploration en cours",
-      "file_code": "EN_COURS",
-      "color": "#d3d3d3"
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
     }
   ],
   "photos": [],

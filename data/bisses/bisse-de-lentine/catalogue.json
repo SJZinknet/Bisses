@@ -24,12 +24,6 @@
   },
   "segment_categories": [
     {
-      "id": "unknown",
-      "name": "Non classé",
-      "file_code": "NON_CLASSE",
-      "color": "#8e44ad"
-    },
-    {
       "id": "open",
       "name": "À ciel ouvert",
       "file_code": "CIEL_OUVERT",
@@ -40,12 +34,6 @@
       "name": "Canalisé",
       "file_code": "CANALISE",
       "color": "#111111"
-    },
-    {
-      "id": "abandoned",
-      "name": "Abandonné",
-      "file_code": "ABANDONNE",
-      "color": "#ef6c00"
     }
   ],
   "photos": [],
