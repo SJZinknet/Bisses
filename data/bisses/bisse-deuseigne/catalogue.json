@@ -42,7 +42,269 @@
       "color": "#ef6c00"
     }
   ],
-  "photos": [],
+  "photos": [
+    {
+      "filename_web": "media/bisse-deuseigne/photo_001_web.jpg",
+      "title": "Aspertion",
+      "description": "Le tuyau est utilisé pour alimenter un jet d'aspertion en amont, puis il part dans la forêt pour ressortir plus bas.",
+      "date": "2026-06-29T05:46:29+00:00",
+      "lat": 46.15393458828889,
+      "lon": 7.392522210272222,
+      "platform_order": 1
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_002_web.jpg",
+      "title": "Sortie du tuyau du bisse?",
+      "description": "Difficile de déterminer si c'est vraiment l'eau du bisse.",
+      "date": "2026-06-29T05:46:49+00:00",
+      "lat": 46.153795026481816,
+      "lon": 7.392444307845454,
+      "platform_order": 2
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_003_web.jpg",
+      "title": "Tuyau sur la route",
+      "description": "Le tuyau passe sur la route et alimente un autre jet d'aspertion qui irrige la prairie avoisinante.",
+      "date": "2026-06-29T06:03:21+00:00",
+      "lat": 46.15517057438889,
+      "lon": 7.394093292966667,
+      "platform_order": 3
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_004_web.jpg",
+      "title": "Jet d'aspertion",
+      "description": "L'eau du tuyau s'arrête ici.",
+      "date": "2026-06-29T06:06:10+00:00",
+      "lat": 46.15603707215789,
+      "lon": 7.3946270369315785,
+      "platform_order": 4
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_005_web.jpg",
+      "title": "Tuyau dans la forêt",
+      "description": "Le bisse étant sensé siphonner l'eau à travers la vallée pour la faire passer sur l'autre rive de la Dixence, ce tuyau fait peut-être partie de cette installation.",
+      "date": "2026-06-29T06:10:36+00:00",
+      "lat": 46.15545730165493,
+      "lon": 7.3948504305,
+      "platform_order": 5
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_006_web.jpg",
+      "title": "Arrivée d'un tuyau",
+      "description": "Le tuyau est suspendu par dessus la vallée.",
+      "date": "2026-06-29T06:36:02+00:00",
+      "lat": 46.15633883696471,
+      "lon": 7.396597922429412,
+      "platform_order": 6
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_007_web.jpg",
+      "title": "Vestiges de Chéneaux",
+      "description": "Á l'arrivée du tuyau sur l'autre flanc de la montagne, on voit ce qui semble être des vestiges de Chéneaux.",
+      "date": "2026-06-29T06:38:46+00:00",
+      "lat": 46.15628843316842,
+      "lon": 7.396907670247368,
+      "platform_order": 7
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_008_web.jpg",
+      "title": "Vestiges de Chéneaux",
+      "description": "Á l'arrivée du tuyau sur l'autre flanc de la montagne, on voit ce qui semble être des vestiges de Chéneaux.",
+      "date": "2026-06-29T06:39:06+00:00",
+      "lat": 46.1562901088,
+      "lon": 7.3969420993,
+      "platform_order": 8
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_009_web.jpg",
+      "title": "Trace du bisse dans la forêt",
+      "description": "",
+      "date": "2026-06-29T07:06:52+00:00",
+      "lat": 46.15576050017619,
+      "lon": 7.3976658400333335,
+      "platform_order": 9
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_010_web.jpg",
+      "title": "Installation de départ du bisse",
+      "description": "Á l'intérieur on voit plusieurs bassins et une arrivée principale de tuyau/conduite.",
+      "date": "2026-06-29T07:07:25+00:00",
+      "lat": 46.15556842919167,
+      "lon": 7.397650861375,
+      "platform_order": 10
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_011_web.jpg",
+      "title": "Arrivée de conduite",
+      "description": "Il arrive que des animaux restent piégés dans les bassin...",
+      "date": "2026-06-29T07:11:24+00:00",
+      "lat": 46.15547767324662,
+      "lon": 7.397652287131317,
+      "platform_order": 11
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_012_web.jpg",
+      "title": "Bisse à ciel ouvert",
+      "description": "",
+      "date": "2026-06-29T07:18:45+00:00",
+      "lat": 46.1569989379,
+      "lon": 7.398553814316666,
+      "platform_order": 12
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_013_web.jpg",
+      "title": "La végétation reprend ses droits",
+      "description": "",
+      "date": "2026-06-29T07:25:39+00:00",
+      "lat": 46.157916898450004,
+      "lon": 7.3996603558625,
+      "platform_order": 13
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_014_web.jpg",
+      "title": "Retour du bisse à ciel ouvert",
+      "description": "",
+      "date": "2026-06-29T07:37:22+00:00",
+      "lat": 46.16005256475,
+      "lon": 7.40253590765,
+      "platform_order": 14
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_015_web.jpg",
+      "title": "Prairie fleurie",
+      "description": "Le bisse surplombe une prairie fleurie.",
+      "date": "2026-06-29T07:39:22+00:00",
+      "lat": 46.16064954895385,
+      "lon": 7.403527063338461,
+      "platform_order": 15
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_016_web.jpg",
+      "title": "Auges métalliques",
+      "description": "",
+      "date": "2026-06-29T07:44:04+00:00",
+      "lat": 46.16173635839091,
+      "lon": 7.405215601763636,
+      "platform_order": 16
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_017_web.jpg",
+      "title": "Auges métalliques",
+      "description": "",
+      "date": "2026-06-29T07:47:22+00:00",
+      "lat": 46.16283503065882,
+      "lon": 7.405837321747058,
+      "platform_order": 17
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_018_web.jpg",
+      "title": "Pont avec auges métalliques",
+      "description": "",
+      "date": "2026-06-29T07:47:40+00:00",
+      "lat": 46.162982211824996,
+      "lon": 7.4059538761125,
+      "platform_order": 18
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_019_web.jpg",
+      "title": "Bisse canalisé sous le sentier",
+      "description": "",
+      "date": "2026-06-29T08:02:29+00:00",
+      "lat": 46.16688120795,
+      "lon": 7.4134827007999995,
+      "platform_order": 19
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_020_web.jpg",
+      "title": "Auges métalliques",
+      "description": "Retour du bisse à ciel ouvert",
+      "date": "2026-06-29T08:02:59+00:00",
+      "lat": 46.16695868354706,
+      "lon": 7.413756635605883,
+      "platform_order": 20
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_021_web.jpg",
+      "title": "",
+      "description": "Le bisse passe à proximité de chalets.",
+      "date": "2026-06-29T08:04:30+00:00",
+      "lat": 46.16728621864333,
+      "lon": 7.41474428037,
+      "platform_order": 21
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_022_web.jpg",
+      "title": "Écluse, décharge et entrée de canal",
+      "description": "La décharge semble bouchée volontairement.",
+      "date": "2026-06-29T08:07:27+00:00",
+      "lat": 46.167720450606666,
+      "lon": 7.416943839633333,
+      "platform_order": 22
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_023_web.jpg",
+      "title": "Auges métalliques",
+      "description": "Retour du bisse à ciel ouvert",
+      "date": "2026-06-29T08:09:20+00:00",
+      "lat": 46.16748241748,
+      "lon": 7.418243781646667,
+      "platform_order": 23
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_024_web.jpg",
+      "title": "Auges métalliques, Écluse et décharge",
+      "description": "",
+      "date": "2026-06-29T08:11:46+00:00",
+      "lat": 46.16721722238368,
+      "lon": 7.419631591630612,
+      "platform_order": 24
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_025_web.jpg",
+      "title": "Petite chute du bisse",
+      "description": "",
+      "date": "2026-06-29T08:16:53+00:00",
+      "lat": 46.16649596246977,
+      "lon": 7.421711035713954,
+      "platform_order": 25
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_026_web.jpg",
+      "title": "Vue sur la Dent Blanche",
+      "description": "",
+      "date": "2026-06-29T08:18:43+00:00",
+      "lat": 46.16645678124286,
+      "lon": 7.422204710542857,
+      "platform_order": 26
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_027_web.jpg",
+      "title": "Décharge",
+      "description": "",
+      "date": "2026-06-29T08:21:04+00:00",
+      "lat": 46.166262221032355,
+      "lon": 7.422625031877941,
+      "platform_order": 27
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_028_web.jpg",
+      "title": "Retour du bisse à ciel ouvert",
+      "description": "",
+      "date": "2026-06-29T08:22:37+00:00",
+      "lat": 46.16613984175882,
+      "lon": 7.4228932252176465,
+      "platform_order": 28
+    },
+    {
+      "filename_web": "media/bisse-deuseigne/photo_029_web.jpg",
+      "title": "Fin du bisse",
+      "description": "Le bisse coule à travers le village d'Euseigne. L'eau rejoindrait la Borgne en aval.",
+      "date": "2026-06-29T08:25:51+00:00",
+      "lat": 46.16528415407632,
+      "lon": 7.4241837173710525,
+      "platform_order": 29
+    }
+  ],
   "external_resources": [],
   "inventory_info": {
     "nom": "Bisse d’Euseigne",
