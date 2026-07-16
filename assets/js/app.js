@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-06-27-v5.1");
+console.log("Bisses build bisses-ui-clusters-2026-07-16-v5.2");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -48,6 +48,14 @@ const FALLBACK_CATEGORIES = {
 // Décision métier : un segment bicolore est toujours canalisé + abandonné.
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
+
+// Les transitions entre deux tronçons de couleurs différentes doivent être nettes.
+// "butt" coupe le trait droit à l'extrémité du segment, au lieu de créer
+// un arrondi qui brouille la lecture de la limite entre deux états.
+const SEGMENT_LINE_CAP = "butt";
+
+// Les cibles invisibles de clic restent arrondies pour garder une zone de clic confortable.
+const HIT_LINE_CAP = "round";
 
 function clusterRadiusForZoom(zoom) {
   // Rayon en pixels : compromis entre v1 et v2.
@@ -931,7 +939,7 @@ function addHaloForPart(layerGroup, latlngs, style) {
     color: "#ffffff",
     weight: style.outlineWeight,
     opacity: style.opacity,
-    lineCap: "round",
+    lineCap: SEGMENT_LINE_CAP,
     lineJoin: "round",
     interactive: false
   }).addTo(layerGroup);
@@ -945,7 +953,7 @@ function addClickTarget(layerGroup, latlngs, feature, style) {
     color: "#000000",
     weight: style.clickWeight,
     opacity: 0,
-    lineCap: "round",
+    lineCap: HIT_LINE_CAP,
     lineJoin: "round",
     interactive: true
   }).addTo(layerGroup);
@@ -966,7 +974,7 @@ function addSingleSegment(layerGroup, outlineGroup, feature) {
       color,
       weight: style.colorWeight,
       opacity: style.opacity,
-      lineCap: "round",
+      lineCap: SEGMENT_LINE_CAP,
       lineJoin: "round",
       interactive: true
     }).addTo(layerGroup);
@@ -994,7 +1002,7 @@ function addBicolorSegment(layerGroup, outlineGroup, feature) {
       color: colorA,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: "round",
+      lineCap: SEGMENT_LINE_CAP,
       lineJoin: "round",
       offset: -style.offset,
       interactive: true
@@ -1005,7 +1013,7 @@ function addBicolorSegment(layerGroup, outlineGroup, feature) {
       color: colorB,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: "round",
+      lineCap: SEGMENT_LINE_CAP,
       lineJoin: "round",
       offset: style.offset,
       interactive: true
