@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-clusters-2026-07-16-v5.2.1"
+# BUILD_VERSION = "bisses-ui-clusters-2026-07-16-v5.3.1"
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-ui-clusters-2026-07-16-v5.2</div>
+          <div class="build-version">bisses-ui-clusters-2026-07-16-v5.3</div>
         </div>
 
         <div class="toolbar">
@@ -838,7 +838,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-07-16-v5.2");
+console.log("Bisses build bisses-ui-clusters-2026-07-16-v5.3");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -886,10 +886,11 @@ const FALLBACK_CATEGORIES = {
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
-// Les transitions entre deux tronçons de couleurs différentes doivent être nettes.
-// "butt" coupe le trait droit à l'extrémité du segment, au lieu de créer
-// un arrondi qui brouille la lecture de la limite entre deux états.
-const SEGMENT_LINE_CAP = "butt";
+// Le halo blanc doit rester une seule trace continue.
+// Les traits colorés sont légèrement prolongés aux jonctions pour éviter
+// les trous blancs quand deux tronçons de couleurs différentes se rencontrent dans un angle.
+const SEGMENT_OUTLINE_LINE_CAP = "round";
+const SEGMENT_COLOR_LINE_CAP = "square";
 
 // Les cibles invisibles de clic restent arrondies pour garder une zone de clic confortable.
 const HIT_LINE_CAP = "round";
@@ -1776,7 +1777,7 @@ function addHaloForPart(layerGroup, latlngs, style) {
     color: "#ffffff",
     weight: style.outlineWeight,
     opacity: style.opacity,
-    lineCap: SEGMENT_LINE_CAP,
+    lineCap: SEGMENT_OUTLINE_LINE_CAP,
     lineJoin: "round",
     interactive: false
   }).addTo(layerGroup);
@@ -1811,7 +1812,7 @@ function addSingleSegment(layerGroup, outlineGroup, feature) {
       color,
       weight: style.colorWeight,
       opacity: style.opacity,
-      lineCap: SEGMENT_LINE_CAP,
+      lineCap: SEGMENT_COLOR_LINE_CAP,
       lineJoin: "round",
       interactive: true
     }).addTo(layerGroup);
@@ -1839,7 +1840,7 @@ function addBicolorSegment(layerGroup, outlineGroup, feature) {
       color: colorA,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: SEGMENT_LINE_CAP,
+      lineCap: SEGMENT_COLOR_LINE_CAP,
       lineJoin: "round",
       offset: -style.offset,
       interactive: true
@@ -1850,7 +1851,7 @@ function addBicolorSegment(layerGroup, outlineGroup, feature) {
       color: colorB,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: SEGMENT_LINE_CAP,
+      lineCap: SEGMENT_COLOR_LINE_CAP,
       lineJoin: "round",
       offset: style.offset,
       interactive: true
@@ -2348,7 +2349,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-clusters-2026-07-16-v5.2
+bisses-ui-clusters-2026-07-16-v5.3
 
 Générer le site :
 python build_bisses.py
@@ -2389,7 +2390,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-ui-clusters-2026-07-16-v5.2")
+    print("Version : bisses-ui-clusters-2026-07-16-v5.3")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
