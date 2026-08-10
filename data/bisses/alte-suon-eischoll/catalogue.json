@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "alte-suon-eischoll-2026",
+    "title": "Alte Suon (Eischoll)",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "alte-suon-eischoll",
+    "title": "Alte Suon (Eischoll)",
+    "region": "Viège – Région",
+    "commune": "Eischoll",
+    "description": "L’Alte Suon est un long bisse encore en activité; il capte l’eau dans le Milibach à 1685m, pour la conduire sur les hauts de Eischoll.",
+    "itinerary": "De Eischoll monter vers Breitmatte pour trouver le bisse et le suivre jusqu’à la prise. Retour par un bisse inférieur.",
+    "length_km": 5.9,
+    "altitude_min_m": 1120,
+    "altitude_max_m": 1685,
+    "difficulty": "T1",
+    "marked_trail": true,
+    "state": "tot. en eau",
+    "tags": [],
+    "communes": "Eischoll"
+  },
+  "segment_categories": [
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
+    },
+    {
+      "id": "explorationencours",
+      "name": "Exploration en cours",
+      "file_code": "EN_COURS",
+      "color": "#808080"
+    }
+  ],
+  "photos": [],
+  "external_resources": [],
+  "inventory_info": {
+    "nom": "Alte Suon (Eischoll)",
+    "slug": "alte-suon-eischoll",
+    "url": "https://bisses-valais.ch/bisses/alte-suon-eischoll/",
+    "description": "L’Alte Suon est un long bisse encore en activité; il capte l’eau dans le Milibach à 1685m, pour la conduire sur les hauts de Eischoll.",
+    "itineraire": "De Eischoll monter vers Breitmatte pour trouver le bisse et le suivre jusqu’à la prise. Retour par un bisse inférieur.",
+    "region": "Viège – Région",
+    "communes": "Eischoll",
+    "etat": "tot. en eau",
+    "sentier": "part. balisé",
+    "cotation": "T1",
+    "tags": "",
+    "longueur_km": 5.9,
+    "altitude_haut_m": 1685,
+    "altitude_bas_m": 1120,
+    "prise_eau": "Milibach",
+    "zones_irriguees": "Breitmattu, Eischoll.",
+    "autres_noms": "Alte Eischlersuon, Habersuon",
+    "classement_ad": "*",
+    "sdt_numero": 120,
+    "sdt_importance": "Cantonal",
+    "post_modified": "",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-10T16:27:34"
+  }
+}

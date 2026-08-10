@@ -1,5 +1,13 @@
 [
   {
+    "id": "alte-suon-eischoll",
+    "title": "Alte Suon (Eischoll)",
+    "region": "Viège – Région",
+    "commune": "Eischoll",
+    "catalogue": "data/bisses/alte-suon-eischoll/catalogue.json",
+    "segments": "data/bisses/alte-suon-eischoll/segments.geojson"
+  },
+  {
     "id": "bisse-de-clavau",
     "title": "Bisse de Clavau",
     "region": "Liène",
