@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-work-band-2026-08-10-v6-prototype"
+# BUILD_VERSION = "bisses-ui-clusters-2026-08-10-v6.1"
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-work-band-2026-08-10-v6-prototype</div>
+          <div class="build-version">bisses-ui-clusters-2026-08-10-v6.1</div>
         </div>
 
         <div class="toolbar">
@@ -838,7 +838,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-work-band-2026-08-10-v6-prototype");
+console.log("Bisses build bisses-ui-clusters-2026-08-10-v6.1");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -848,11 +848,13 @@ const MAX_ZOOM = 26;
 const SHOW_SYNTHETIC_TRACES_AT_ZOOM = 19;
 const SHOW_DETAILED_SEGMENTS_AT_ZOOM = 20.5;
 const SHOW_BICOLOR_SPLIT_AT_ZOOM = 23.5;
+const SHOW_EXACT_SEGMENT_DETAIL_AT_ZOOM = 25;
 
-// Architecture Work : le moteur stable reste disponible en secours.
-// Mettre "polyline" pour retrouver strictement le rendu stable v5.1.
-// Mettre "band" pour tester le prototype géométrique Option C.
-const SEGMENT_RENDER_ENGINE = "band";
+// Option A : généralisation purement visuelle des plages de couleur.
+// Les données GeoJSON sources ne sont jamais modifiées.
+const ENABLE_SEGMENT_GENERALIZATION = true;
+const SAME_NEIGHBORS_MAX_PX = 18;
+const DIFFERENT_NEIGHBORS_MAX_PX = 9;
 
 const MAP_SCALE_STEPS = [
   { min: 16, max: 16.5, label: "CN 1:1 million", layer: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale", format: "jpeg", maxNativeZoom: 26, muted: false },
@@ -891,14 +893,11 @@ const FALLBACK_CATEGORIES = {
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
-// Le moteur polyline conserve exactement les extrémités arrondies de la v5.1.
-const POLYLINE_LINE_CAP = "round";
+// Retour au rendu stable v5.1 : traits et transitions arrondis.
+const SEGMENT_LINE_CAP = "round";
 
-// Les cibles invisibles de clic restent arrondies dans les deux moteurs.
+// Les cibles invisibles de clic restent arrondies pour garder une zone de clic confortable.
 const HIT_LINE_CAP = "round";
-
-// Limite les pointes aux angles serrés lors de la construction des bandes.
-const BAND_MITER_LIMIT = 2.4;
 
 function clusterRadiusForZoom(zoom) {
   // Rayon en pixels : compromis entre v1 et v2.
@@ -945,6 +944,7 @@ const state = {
   base: "carto",
   currentStepKey: "",
   currentSegmentsKey: "",
+  currentVisibleSegmentCount: 0,
   segmentRefreshToken: 0,
   listHtml: "",
   legendHtml: "",
@@ -952,8 +952,6 @@ const state = {
   bisseMarkers: createBisseMarkerLayer(),
   segmentOutlineLayer: null,
   segmentColorLayer: null,
-  segmentBandLayer: null,
-  segmentHitLayer: null,
   photoLayer: L.layerGroup()
 };
 
@@ -1679,7 +1677,7 @@ function refreshMarkerVisibility() {
   refreshLegendVisibility();
 }
 
-function clearSegmentLayers() {
+function removeVisibleSegments() {
   if (state.segmentOutlineLayer) {
     map.removeLayer(state.segmentOutlineLayer);
     state.segmentOutlineLayer = null;
@@ -1689,30 +1687,6 @@ function clearSegmentLayers() {
     map.removeLayer(state.segmentColorLayer);
     state.segmentColorLayer = null;
   }
-
-  if (state.segmentBandLayer) {
-    map.removeLayer(state.segmentBandLayer);
-    state.segmentBandLayer = null;
-  }
-
-  if (state.segmentHitLayer) {
-    map.removeLayer(state.segmentHitLayer);
-    state.segmentHitLayer = null;
-  }
-}
-
-// Nom historique gardé localement pour éviter qu'un appel ancien ne casse.
-function removeVisibleSegments() {
-  clearSegmentLayers();
-}
-
-function hasVisibleSegmentLayers() {
-  return Boolean(state.segmentColorLayer || state.segmentBandLayer);
-}
-
-function visibleSegmentLayerCount() {
-  const layer = state.segmentBandLayer || state.segmentColorLayer;
-  return layer ? layer.getLayers().length : 0;
 }
 
 function buildSyntheticFeatureCollection(dataList) {
@@ -1778,9 +1752,351 @@ function buildDetailedFeatureCollection(dataList) {
   return { type: "FeatureCollection", features };
 }
 
+function coordinateKey(coord) {
+  if (!Array.isArray(coord) || coord.length < 2) return "";
+  return `${Number(coord[0]).toFixed(7)}:${Number(coord[1]).toFixed(7)}`;
+}
+
+function displayStyleForFeature(feature) {
+  const properties = feature.properties || {};
+  const name = properties.__category_name || "Segment";
+
+  if (properties.__display_mode === "bicolor") {
+    const colors = Array.isArray(properties.__bicolor_colors)
+      ? properties.__bicolor_colors.slice(0, 2)
+      : ["#ef6c00", "#111111"];
+
+    return {
+      key: `bicolor:${colors.join("|")}:${name}`,
+      mode: "bicolor",
+      colors,
+      color: null,
+      name,
+      protected: true
+    };
+  }
+
+  const color = properties.__category_color || "#777777";
+  return {
+    key: `single:${color}:${name}`,
+    mode: "single",
+    colors: null,
+    color,
+    name,
+    protected: false
+  };
+}
+
+function applyDisplayStyle(properties, style) {
+  properties.__display_mode = style.mode;
+  properties.__category_name = style.name;
+
+  if (style.mode === "bicolor") {
+    properties.__bicolor_colors = style.colors.slice();
+    delete properties.__category_color;
+  } else {
+    properties.__category_color = style.color;
+    delete properties.__bicolor_colors;
+  }
+}
+
+function displayRecordOrder(feature, featureIndex, partIndex) {
+  const raw = Number(feature?.properties?.order);
+  const order = Number.isFinite(raw) ? raw : featureIndex;
+  return (order * 1000) + partIndex;
+}
+
+function makeDisplayPartRecord(feature, coordinates, featureIndex, partIndex) {
+  if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
+
+  const clonedCoordinates = coordinates.map((coord) => coord.slice());
+  const properties = { ...(feature.properties || {}) };
+
+  return {
+    feature,
+    properties,
+    coordinates: clonedCoordinates,
+    startKey: coordinateKey(clonedCoordinates[0]),
+    endKey: coordinateKey(clonedCoordinates[clonedCoordinates.length - 1]),
+    style: displayStyleForFeature(feature),
+    order: displayRecordOrder(feature, featureIndex, partIndex),
+    sourceCount: 1,
+    generalized: false
+  };
+}
+
+function displayPartRecords(featureCollection) {
+  const byBisse = new Map();
+
+  (featureCollection.features || []).forEach((feature, featureIndex) => {
+    const geometry = feature.geometry || {};
+    const parts = geometry.type === "LineString"
+      ? [geometry.coordinates || []]
+      : (geometry.type === "MultiLineString" ? (geometry.coordinates || []) : []);
+    const bisseId = feature.properties?.__bisse_id || `__feature_${featureIndex}`;
+
+    if (!byBisse.has(bisseId)) byBisse.set(bisseId, []);
+
+    parts.forEach((coordinates, partIndex) => {
+      const record = makeDisplayPartRecord(feature, coordinates, featureIndex, partIndex);
+      if (record) byBisse.get(bisseId).push(record);
+    });
+  });
+
+  for (const records of byBisse.values()) {
+    records.sort((a, b) => a.order - b.order);
+  }
+
+  return byBisse;
+}
+
+function reverseDisplayRecord(record) {
+  const coordinates = record.coordinates.slice().reverse();
+  return {
+    ...record,
+    coordinates,
+    startKey: coordinateKey(coordinates[0]),
+    endKey: coordinateKey(coordinates[coordinates.length - 1])
+  };
+}
+
+function buildConnectedDisplayChains(featureCollection) {
+  const chains = [];
+  const byBisse = displayPartRecords(featureCollection);
+
+  for (const [bisseId, sourceRecords] of byBisse.entries()) {
+    const remaining = sourceRecords.slice();
+
+    while (remaining.length) {
+      const chain = [remaining.shift()];
+      let changed = true;
+
+      while (changed) {
+        changed = false;
+        const chainStart = chain[0].startKey;
+        const chainEnd = chain[chain.length - 1].endKey;
+
+        for (let index = 0; index < remaining.length; index += 1) {
+          const candidate = remaining[index];
+
+          if (chainEnd === candidate.startKey) {
+            chain.push(candidate);
+          } else if (chainEnd === candidate.endKey) {
+            chain.push(reverseDisplayRecord(candidate));
+          } else if (chainStart === candidate.endKey) {
+            chain.unshift(candidate);
+          } else if (chainStart === candidate.startKey) {
+            chain.unshift(reverseDisplayRecord(candidate));
+          } else {
+            continue;
+          }
+
+          remaining.splice(index, 1);
+          changed = true;
+          break;
+        }
+      }
+
+      chains.push({ bisseId, records: chain });
+    }
+  }
+
+  return chains;
+}
+
+function mergeRunCoordinates(left, right) {
+  if (coordinateKey(left[left.length - 1]) === coordinateKey(right[0])) {
+    return left.concat(right.slice(1));
+  }
+  return left.concat(right);
+}
+
+function mergeTwoDisplayRuns(left, right) {
+  return {
+    ...left,
+    coordinates: mergeRunCoordinates(left.coordinates, right.coordinates),
+    sourceCount: left.sourceCount + right.sourceCount,
+    generalized: left.generalized || right.generalized
+  };
+}
+
+function mergeAdjacentDisplayRuns(runs) {
+  const merged = [];
+
+  for (const run of runs) {
+    const previous = merged[merged.length - 1];
+
+    if (previous && previous.style.key === run.style.key) {
+      merged[merged.length - 1] = mergeTwoDisplayRuns(previous, run);
+    } else {
+      merged.push({
+        ...run,
+        coordinates: run.coordinates.map((coord) => coord.slice()),
+        style: { ...run.style, colors: run.style.colors ? run.style.colors.slice() : null }
+      });
+    }
+  }
+
+  return merged;
+}
+
+function buildDisplayColorRuns(records) {
+  const runs = records.map((record) => ({
+    properties: { ...record.properties },
+    coordinates: record.coordinates.map((coord) => coord.slice()),
+    style: { ...record.style, colors: record.style.colors ? record.style.colors.slice() : null },
+    sourceCount: record.sourceCount,
+    generalized: record.generalized
+  }));
+
+  return mergeAdjacentDisplayRuns(runs);
+}
+
+function displayRunPixelLength(run) {
+  let length = 0;
+  const coordinates = run.coordinates || [];
+
+  for (let index = 1; index < coordinates.length; index += 1) {
+    const a = coordinates[index - 1];
+    const b = coordinates[index];
+    const pointA = map.latLngToLayerPoint([a[1], a[0]]);
+    const pointB = map.latLngToLayerPoint([b[1], b[0]]);
+    length += pointA.distanceTo(pointB);
+  }
+
+  return length;
+}
+
+function availableGeneralizationNeighbor(runs, index) {
+  if (index < 0 || index >= runs.length) return null;
+  return runs[index].style.protected ? null : runs[index];
+}
+
+function generalizationThreshold(runs, index) {
+  const run = runs[index];
+  if (!run || run.style.protected) return 0;
+
+  const left = availableGeneralizationNeighbor(runs, index - 1);
+  const right = availableGeneralizationNeighbor(runs, index + 1);
+  if (!left && !right) return 0;
+
+  if (left && right && left.style.key === right.style.key) {
+    return SAME_NEIGHBORS_MAX_PX;
+  }
+
+  return DIFFERENT_NEIGHBORS_MAX_PX;
+}
+
+function generalizationTargetIndex(runs, index) {
+  const left = availableGeneralizationNeighbor(runs, index - 1);
+  const right = availableGeneralizationNeighbor(runs, index + 1);
+
+  if (left && right && left.style.key === right.style.key) return index - 1;
+  if (left && !right) return index - 1;
+  if (!left && right) return index + 1;
+  if (!left && !right) return -1;
+
+  const leftLength = displayRunPixelLength(left);
+  const rightLength = displayRunPixelLength(right);
+  return leftLength >= rightLength ? index - 1 : index + 1;
+}
+
+function copyRunDisplayStyle(run, target) {
+  return {
+    ...run,
+    style: {
+      ...target.style,
+      colors: target.style.colors ? target.style.colors.slice() : null
+    },
+    generalized: true
+  };
+}
+
+function generalizeDisplayRuns(sourceRuns, zoom) {
+  let runs = mergeAdjacentDisplayRuns(sourceRuns);
+
+  if (!ENABLE_SEGMENT_GENERALIZATION || zoom >= SHOW_EXACT_SEGMENT_DETAIL_AT_ZOOM) {
+    return runs;
+  }
+
+  let guard = 0;
+
+  while (guard < 1000) {
+    guard += 1;
+    let candidateIndex = -1;
+    let candidateRatio = Number.POSITIVE_INFINITY;
+
+    for (let index = 0; index < runs.length; index += 1) {
+      const threshold = generalizationThreshold(runs, index);
+      if (!threshold) continue;
+
+      const length = displayRunPixelLength(runs[index]);
+      if (length > threshold) continue;
+
+      const ratio = length / threshold;
+      if (ratio < candidateRatio) {
+        candidateRatio = ratio;
+        candidateIndex = index;
+      }
+    }
+
+    if (candidateIndex < 0) break;
+
+    const targetIndex = generalizationTargetIndex(runs, candidateIndex);
+    if (targetIndex < 0) break;
+
+    runs[candidateIndex] = copyRunDisplayStyle(runs[candidateIndex], runs[targetIndex]);
+    runs = mergeAdjacentDisplayRuns(runs);
+  }
+
+  return runs;
+}
+
+function displayRunFeature(run, chainId, runIndex) {
+  const properties = {
+    ...run.properties,
+    __display_chain_id: chainId,
+    __display_run_index: runIndex,
+    __source_feature_count: run.sourceCount,
+    __generalized: Boolean(run.generalized)
+  };
+
+  applyDisplayStyle(properties, run.style);
+
+  return {
+    type: "Feature",
+    properties,
+    geometry: {
+      type: "LineString",
+      coordinates: run.coordinates.map((coord) => coord.slice())
+    }
+  };
+}
+
+function buildGeneralizedDisplayFeatureCollection(featureCollection, allowAbsorption) {
+  const features = [];
+  const zoom = allowAbsorption ? roundedZoom() : SHOW_EXACT_SEGMENT_DETAIL_AT_ZOOM;
+  const chains = buildConnectedDisplayChains(featureCollection);
+
+  chains.forEach((chain, chainIndex) => {
+    const chainId = `${chain.bisseId}:${chainIndex}`;
+    const colorRuns = buildDisplayColorRuns(chain.records);
+    const displayRuns = generalizeDisplayRuns(colorRuns, zoom);
+
+    displayRuns.forEach((run, runIndex) => {
+      features.push(displayRunFeature(run, chainId, runIndex));
+    });
+  });
+
+  return { type: "FeatureCollection", features };
+}
+
 function bindSegmentInteraction(layer, feature) {
   const title = feature.properties.__bisse_title || "Bisse";
-  const type = feature.properties.__category_name || "Segment";
+  const baseType = feature.properties.__category_name || "Segment";
+  const type = feature.properties.__generalized
+    ? `${baseType} (vue simplifiée)`
+    : baseType;
 
   layer.bindTooltip(`${escapeHtml(title)} — ${escapeHtml(type)}`, {
     className: "segment-tooltip",
@@ -1808,7 +2124,7 @@ function addHaloForPart(layerGroup, latlngs, style) {
     color: "#ffffff",
     weight: style.outlineWeight,
     opacity: style.opacity,
-    lineCap: POLYLINE_LINE_CAP,
+    lineCap: SEGMENT_LINE_CAP,
     lineJoin: "round",
     interactive: false
   }).addTo(layerGroup);
@@ -1830,34 +2146,93 @@ function addClickTarget(layerGroup, latlngs, feature, style) {
   bindSegmentInteraction(target, feature);
 }
 
-function addSingleSegmentPolyline(layerGroup, outlineGroup, hitGroup, feature, drawHalo = true, bindVisible = true) {
+function continuousHaloCoordinateParts(features) {
+  const parts = [];
+  let current = [];
+
+  const ordered = features.slice().sort((a, b) => (
+    Number(a.properties.__display_run_index || 0) - Number(b.properties.__display_run_index || 0)
+  ));
+
+  for (const feature of ordered) {
+    const geometry = feature.geometry || {};
+    const geometryParts = geometry.type === "LineString"
+      ? [geometry.coordinates || []]
+      : (geometry.type === "MultiLineString" ? (geometry.coordinates || []) : []);
+
+    for (const coordinates of geometryParts) {
+      if (!coordinates.length) continue;
+
+      if (!current.length) {
+        current = coordinates.map((coord) => coord.slice());
+        continue;
+      }
+
+      const currentEnd = coordinateKey(current[current.length - 1]);
+      const partStart = coordinateKey(coordinates[0]);
+      const partEnd = coordinateKey(coordinates[coordinates.length - 1]);
+
+      if (currentEnd === partStart) {
+        current = current.concat(coordinates.slice(1).map((coord) => coord.slice()));
+      } else if (currentEnd === partEnd) {
+        current = current.concat(coordinates.slice().reverse().slice(1).map((coord) => coord.slice()));
+      } else {
+        parts.push(current);
+        current = coordinates.map((coord) => coord.slice());
+      }
+    }
+  }
+
+  if (current.length) parts.push(current);
+  return parts;
+}
+
+function addContinuousSegmentHalos(outlineGroup, featureCollection) {
+  const byChain = new Map();
+
+  for (const feature of featureCollection.features || []) {
+    const chainId = feature.properties.__display_chain_id
+      || `${feature.properties.__bisse_id || "bisse"}:${byChain.size}`;
+    if (!byChain.has(chainId)) byChain.set(chainId, []);
+    byChain.get(chainId).push(feature);
+  }
+
+  for (const features of byChain.values()) {
+    const baseStyle = segmentStyleForZoom();
+    const hasBicolor = features.some((feature) => feature.properties.__display_mode === "bicolor");
+    const style = hasBicolor
+      ? { ...baseStyle, outlineWeight: Math.max(baseStyle.outlineWeight, bicolorStyleForZoom().outlineWeight) }
+      : baseStyle;
+
+    for (const coordinates of continuousHaloCoordinateParts(features)) {
+      const latlngs = coordinates.map((coord) => [coord[1], coord[0]]);
+      addHaloForPart(outlineGroup, latlngs, style);
+    }
+  }
+}
+
+function addSingleSegment(layerGroup, feature) {
   const parts = latlngPartsFromGeometry(feature.geometry);
   const style = segmentStyleForZoom();
   const color = feature.properties.__category_color || "#777777";
 
   for (const latlngs of parts) {
-    if (drawHalo) {
-      addHaloForPart(outlineGroup, latlngs, style);
-    }
-
     const line = L.polyline(latlngs, {
       pane: "segmentColorPane",
       color,
       weight: style.colorWeight,
       opacity: style.opacity,
-      lineCap: POLYLINE_LINE_CAP,
+      lineCap: SEGMENT_LINE_CAP,
       lineJoin: "round",
-      interactive: bindVisible
+      interactive: true
     }).addTo(layerGroup);
 
-    if (bindVisible) {
-      bindSegmentInteraction(line, feature);
-    }
-    addClickTarget(hitGroup, latlngs, feature, style);
+    bindSegmentInteraction(line, feature);
+    addClickTarget(layerGroup, latlngs, feature, style);
   }
 }
 
-function addBicolorSegmentPolyline(layerGroup, outlineGroup, hitGroup, feature, drawHalo = true, bindVisible = true) {
+function addBicolorSegment(layerGroup, feature) {
   const parts = latlngPartsFromGeometry(feature.geometry);
   const style = bicolorStyleForZoom();
   const colors = Array.isArray(feature.properties.__bicolor_colors)
@@ -1868,19 +2243,15 @@ function addBicolorSegmentPolyline(layerGroup, outlineGroup, hitGroup, feature, 
   const colorB = colors[1] || "#111111";
 
   for (const latlngs of parts) {
-    if (drawHalo) {
-      addHaloForPart(outlineGroup, latlngs, style);
-    }
-
     const left = L.polyline(latlngs, {
       pane: "segmentColorPane",
       color: colorA,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: POLYLINE_LINE_CAP,
+      lineCap: SEGMENT_LINE_CAP,
       lineJoin: "round",
       offset: -style.offset,
-      interactive: bindVisible
+      interactive: true
     }).addTo(layerGroup);
 
     const right = L.polyline(latlngs, {
@@ -1888,353 +2259,34 @@ function addBicolorSegmentPolyline(layerGroup, outlineGroup, hitGroup, feature, 
       color: colorB,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: POLYLINE_LINE_CAP,
+      lineCap: SEGMENT_LINE_CAP,
       lineJoin: "round",
       offset: style.offset,
-      interactive: bindVisible
+      interactive: true
     }).addTo(layerGroup);
 
-    if (bindVisible) {
-      bindSegmentInteraction(left, feature);
-      bindSegmentInteraction(right, feature);
-    }
-    addClickTarget(hitGroup, latlngs, feature, style);
+    bindSegmentInteraction(left, feature);
+    bindSegmentInteraction(right, feature);
+    addClickTarget(layerGroup, latlngs, feature, style);
   }
 }
 
-function drawVisibleSegmentsPolyline(featureCollection) {
+function drawVisibleSegments(featureCollection) {
   const outlineGroup = L.layerGroup();
   const colorGroup = L.layerGroup();
-  const hitGroup = L.layerGroup();
+
+  addContinuousSegmentHalos(outlineGroup, featureCollection);
 
   for (const feature of featureCollection.features || []) {
     if (feature.properties.__display_mode === "bicolor") {
-      addBicolorSegmentPolyline(colorGroup, outlineGroup, hitGroup, feature);
+      addBicolorSegment(colorGroup, feature);
     } else {
-      addSingleSegmentPolyline(colorGroup, outlineGroup, hitGroup, feature);
+      addSingleSegment(colorGroup, feature);
     }
   }
 
   state.segmentOutlineLayer = outlineGroup.addTo(map);
   state.segmentColorLayer = colorGroup.addTo(map);
-  state.segmentHitLayer = hitGroup.addTo(map);
-}
-
-function pointVector(from, to) {
-  return L.point(to.x - from.x, to.y - from.y);
-}
-
-function unitVector(vector) {
-  const length = Math.sqrt((vector.x * vector.x) + (vector.y * vector.y));
-  if (length < 0.000001) return null;
-  return L.point(vector.x / length, vector.y / length);
-}
-
-function dotProduct(a, b) {
-  return (a.x * b.x) + (a.y * b.y);
-}
-
-function normalForTangent(tangent) {
-  return L.point(-tangent.y, tangent.x);
-}
-
-function scaledPoint(vector, scale) {
-  return L.point(vector.x * scale, vector.y * scale);
-}
-
-function addPointVector(point, vector) {
-  return L.point(point.x + vector.x, point.y + vector.y);
-}
-
-function subtractPointVector(point, vector) {
-  return L.point(point.x - vector.x, point.y - vector.y);
-}
-
-function bandEndpointKey(latlng) {
-  const ll = L.latLng(latlng);
-  return `${ll.lat.toFixed(7)}:${ll.lng.toFixed(7)}`;
-}
-
-function makeBandPartRecord(feature, latlngs, partIndex, featureIndex) {
-  const cleanLatLngs = [];
-  const points = [];
-
-  for (const value of latlngs) {
-    const latlng = L.latLng(value);
-    const point = map.latLngToLayerPoint(latlng);
-    const previous = points[points.length - 1];
-
-    if (previous && point.distanceTo(previous) < 0.01) {
-      continue;
-    }
-
-    cleanLatLngs.push(latlng);
-    points.push(point);
-  }
-
-  if (points.length < 2) return null;
-
-  const bisseId = feature.properties.__bisse_id || `__feature_${featureIndex}`;
-
-  return {
-    id: `${featureIndex}:${partIndex}`,
-    feature,
-    bisseId,
-    latlngs: cleanLatLngs,
-    points,
-    startKey: bandEndpointKey(cleanLatLngs[0]),
-    endKey: bandEndpointKey(cleanLatLngs[cleanLatLngs.length - 1])
-  };
-}
-
-function buildBandPartRecords(featureCollection) {
-  const records = [];
-
-  (featureCollection.features || []).forEach((feature, featureIndex) => {
-    const parts = latlngPartsFromGeometry(feature.geometry);
-    parts.forEach((latlngs, partIndex) => {
-      const record = makeBandPartRecord(feature, latlngs, partIndex, featureIndex);
-      if (record) records.push(record);
-    });
-  });
-
-  return records;
-}
-
-function buildBandEndpointMap(records) {
-  const endpoints = new Map();
-
-  function add(key, record, atStart) {
-    if (!endpoints.has(key)) endpoints.set(key, []);
-    endpoints.get(key).push({ record, atStart });
-  }
-
-  for (const record of records) {
-    add(record.startKey, record, true);
-    add(record.endKey, record, false);
-  }
-
-  return endpoints;
-}
-
-function localEndpointTangent(record, atStart) {
-  const points = record.points;
-  if (atStart) {
-    return unitVector(pointVector(points[0], points[1]));
-  }
-  return unitVector(pointVector(points[points.length - 2], points[points.length - 1]));
-}
-
-function sharedEndpointTangent(record, atStart, endpointMap) {
-  const local = localEndpointTangent(record, atStart);
-  if (!local) return null;
-
-  const key = atStart ? record.startKey : record.endKey;
-  const connections = (endpointMap.get(key) || []).filter((entry) => (
-    entry.record.id !== record.id && entry.record.bisseId === record.bisseId
-  ));
-
-  // Une bifurcation n'est pas une transition simple : on conserve alors la tangente locale.
-  if (connections.length !== 1) return local;
-
-  const other = connections[0];
-  const currentPoints = record.points;
-  const otherPoints = other.record.points;
-  const endpoint = atStart ? currentPoints[0] : currentPoints[currentPoints.length - 1];
-  const currentInterior = atStart
-    ? currentPoints[1]
-    : currentPoints[currentPoints.length - 2];
-  const otherInterior = other.atStart
-    ? otherPoints[1]
-    : otherPoints[otherPoints.length - 2];
-
-  // Les deux vecteurs pointent depuis la frontière vers l'intérieur des tronçons.
-  // Leur différence donne une tangente bissectrice non orientée : chaque côté
-  // calcule la même ligne de coupe, même si les features GeoJSON sont inversées.
-  const currentAway = unitVector(pointVector(endpoint, currentInterior));
-  const otherAway = unitVector(pointVector(endpoint, otherInterior));
-  if (!currentAway || !otherAway) return local;
-
-  return unitVector(subtractPointVector(currentAway, otherAway)) || local;
-}
-
-function interiorBandOffset(points, index, halfWidth) {
-  const previousTangent = unitVector(pointVector(points[index - 1], points[index]));
-  const nextTangent = unitVector(pointVector(points[index], points[index + 1]));
-
-  if (!previousTangent || !nextTangent) {
-    const fallback = previousTangent || nextTangent || L.point(1, 0);
-    return scaledPoint(normalForTangent(fallback), halfWidth);
-  }
-
-  const previousNormal = normalForTangent(previousTangent);
-  const nextNormal = normalForTangent(nextTangent);
-  const miter = unitVector(addPointVector(previousNormal, nextNormal));
-
-  if (!miter) {
-    return scaledPoint(nextNormal, halfWidth);
-  }
-
-  const alignment = Math.max(0.2, Math.abs(dotProduct(miter, nextNormal)));
-  const miterLength = Math.min(halfWidth / alignment, halfWidth * BAND_MITER_LIMIT);
-  return scaledPoint(miter, miterLength);
-}
-
-function buildBandPolygonLatLngs(record, width, endpointMap) {
-  const points = record.points;
-  const halfWidth = Math.max(0.5, width / 2);
-  const offsets = [];
-
-  for (let index = 0; index < points.length; index += 1) {
-    if (index === 0 || index === points.length - 1) {
-      const atStart = index === 0;
-      const tangent = sharedEndpointTangent(record, atStart, endpointMap);
-      if (!tangent) return null;
-      offsets.push(scaledPoint(normalForTangent(tangent), halfWidth));
-    } else {
-      offsets.push(interiorBandOffset(points, index, halfWidth));
-    }
-  }
-
-  const left = points.map((point, index) => addPointVector(point, offsets[index]));
-  const right = points
-    .map((point, index) => subtractPointVector(point, offsets[index]))
-    .reverse();
-
-  return left.concat(right).map((point) => map.layerPointToLatLng(point));
-}
-
-function mergeTouchingBandParts(records) {
-  const remaining = records.map((record) => record.latlngs.slice());
-  const merged = [];
-
-  while (remaining.length) {
-    let chain = remaining.shift();
-    let changed = true;
-
-    while (changed) {
-      changed = false;
-      const chainStart = bandEndpointKey(chain[0]);
-      const chainEnd = bandEndpointKey(chain[chain.length - 1]);
-
-      for (let index = 0; index < remaining.length; index += 1) {
-        const candidate = remaining[index];
-        const candidateStart = bandEndpointKey(candidate[0]);
-        const candidateEnd = bandEndpointKey(candidate[candidate.length - 1]);
-
-        if (chainEnd === candidateStart) {
-          chain = chain.concat(candidate.slice(1));
-        } else if (chainEnd === candidateEnd) {
-          chain = chain.concat(candidate.slice().reverse().slice(1));
-        } else if (chainStart === candidateEnd) {
-          chain = candidate.slice(0, -1).concat(chain);
-        } else if (chainStart === candidateStart) {
-          chain = candidate.slice().reverse().slice(0, -1).concat(chain);
-        } else {
-          continue;
-        }
-
-        remaining.splice(index, 1);
-        changed = true;
-        break;
-      }
-    }
-
-    merged.push(chain);
-  }
-
-  return merged;
-}
-
-function addContinuousBandHalos(outlineGroup, records) {
-  const byBisse = new Map();
-  const baseStyle = segmentStyleForZoom();
-  const bicolorStyle = bicolorStyleForZoom();
-  const haloStyle = {
-    ...baseStyle,
-    outlineWeight: Math.max(baseStyle.outlineWeight, bicolorStyle.outlineWeight || 0)
-  };
-
-  for (const record of records) {
-    if (!byBisse.has(record.bisseId)) byBisse.set(record.bisseId, []);
-    byBisse.get(record.bisseId).push(record);
-  }
-
-  for (const bisseRecords of byBisse.values()) {
-    for (const latlngs of mergeTouchingBandParts(bisseRecords)) {
-      addHaloForPart(outlineGroup, latlngs, haloStyle);
-    }
-  }
-}
-
-function drawBandRecord(record, endpointMap, bandGroup, hitGroup) {
-  const style = segmentStyleForZoom();
-  const color = record.feature.properties.__category_color || "#777777";
-  const polygonLatLngs = buildBandPolygonLatLngs(record, style.colorWeight, endpointMap);
-
-  if (polygonLatLngs && polygonLatLngs.length >= 4) {
-    L.polygon(polygonLatLngs, {
-      pane: "segmentColorPane",
-      stroke: false,
-      fill: true,
-      fillColor: color,
-      fillOpacity: style.opacity,
-      interactive: false,
-      smoothFactor: 0
-    }).addTo(bandGroup);
-  } else {
-    // Repli local très rare : une géométrie dégénérée ne doit jamais faire disparaître la trace.
-    L.polyline(record.latlngs, {
-      pane: "segmentColorPane",
-      color,
-      weight: style.colorWeight,
-      opacity: style.opacity,
-      lineCap: POLYLINE_LINE_CAP,
-      lineJoin: "round",
-      interactive: false
-    }).addTo(bandGroup);
-  }
-
-  addClickTarget(hitGroup, record.latlngs, record.feature, style);
-}
-
-function drawVisibleSegmentsBand(featureCollection) {
-  const outlineGroup = L.layerGroup();
-  const bandGroup = L.layerGroup();
-  const hitGroup = L.layerGroup();
-  const records = buildBandPartRecords(featureCollection);
-  const endpointMap = buildBandEndpointMap(records);
-  const bicolorFeatures = new Set();
-
-  addContinuousBandHalos(outlineGroup, records);
-
-  for (const record of records) {
-    const feature = record.feature;
-
-    if (feature.properties.__display_mode === "bicolor") {
-      // Premier prototype : les bicolores gardent le moteur stable, sans halo segmentaire ajouté.
-      if (!bicolorFeatures.has(feature)) {
-        bicolorFeatures.add(feature);
-        addBicolorSegmentPolyline(bandGroup, outlineGroup, hitGroup, feature, false, false);
-      }
-      continue;
-    }
-
-    drawBandRecord(record, endpointMap, bandGroup, hitGroup);
-  }
-
-  state.segmentOutlineLayer = outlineGroup.addTo(map);
-  state.segmentBandLayer = bandGroup.addTo(map);
-  state.segmentHitLayer = hitGroup.addTo(map);
-}
-
-function drawVisibleSegments(featureCollection) {
-  if (SEGMENT_RENDER_ENGINE === "band") {
-    drawVisibleSegmentsBand(featureCollection);
-    return;
-  }
-
-  drawVisibleSegmentsPolyline(featureCollection);
 }
 
 async function refreshVisibleSegments() {
@@ -2247,18 +2299,18 @@ async function refreshVisibleSegments() {
   const style = segmentStyleForZoom();
   const bstyle = bicolorStyleForZoom();
   const zoom = roundedZoom();
-  const key = `${SEGMENT_RENDER_ENGINE}:${mode}:${style.key}:${bstyle.mode}:${zoom}:${state.index.length}:${state.cache.size}`;
+  const key = `${mode}:${style.key}:${bstyle.mode}:${zoom}:${ENABLE_SEGMENT_GENERALIZATION}:${state.index.length}:${state.cache.size}`;
 
   if (mode === "markers") {
     state.currentSegmentsKey = key;
+    state.currentVisibleSegmentCount = 0;
     removeVisibleSegments();
     updateScalePill(0);
     return;
   }
 
-  if (state.currentSegmentsKey === key && hasVisibleSegmentLayers()) {
-    const count = visibleSegmentLayerCount();
-    updateScalePill(count, mode === "synthetic" ? "tracés" : "segments");
+  if (state.currentSegmentsKey === key && state.segmentColorLayer) {
+    updateScalePill(state.currentVisibleSegmentCount, mode === "synthetic" ? "tracés" : "segments");
     return;
   }
 
@@ -2283,15 +2335,21 @@ async function refreshVisibleSegments() {
     return;
   }
 
-  const visibleGeojson = mode === "synthetic"
+  const sourceGeojson = mode === "synthetic"
     ? buildSyntheticFeatureCollection(dataList)
     : buildDetailedFeatureCollection(dataList);
+
+  const visibleGeojson = buildGeneralizedDisplayFeatureCollection(
+    sourceGeojson,
+    mode === "detailed"
+  );
 
   if (token !== state.segmentRefreshToken || segmentRenderMode() !== mode) {
     return;
   }
 
   drawVisibleSegments(visibleGeojson);
+  state.currentVisibleSegmentCount = visibleGeojson.features.length;
 
   const unit = mode === "synthetic" ? "tracés" : "segments";
   updateScalePill(visibleGeojson.features.length, unit);
@@ -2707,15 +2765,14 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-work-band-2026-08-10-v6-prototype
+bisses-ui-clusters-2026-08-10-v6.1
 
-Moteurs de rendu des segments :
-- `polyline` : rendu stable v5.1, conservé comme fallback ;
-- `band` : prototype Work Option C, activé dans cette version.
-
-Le prototype Band construit les couleurs comme des surfaces à largeur constante en pixels,
-dessine un halo continu par bisse et garde une couche de clic invisible indépendante.
-Les segments bicolores restent temporairement rendus par le moteur polyline stable.
+Rendu des tronçons — Option A :
+- traits et transitions arrondis issus de la base stable v5.1 ;
+- halo blanc continu par chaîne connectée ;
+- regroupement des tronçons contigus de même style ;
+- absorption visuelle prudente des micro-plages selon leur longueur en pixels ;
+- détail original complet à partir de z25.
 
 Générer le site :
 python build_bisses.py
@@ -2756,7 +2813,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-work-band-2026-08-10-v6-prototype")
+    print("Version : bisses-ui-clusters-2026-08-10-v6.1")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
