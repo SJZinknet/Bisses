@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BUILD_VERSION = "bisses-ui-clusters-2026-07-16-v5.3.1"
+# BUILD_VERSION = "bisses-work-band-2026-08-10-v6-prototype"
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="brand">
           <div class="eyebrow">Inventaire cartographique</div>
           <h1>Bisses du Valais</h1>
-          <div class="build-version">bisses-ui-clusters-2026-07-16-v5.3</div>
+          <div class="build-version">bisses-work-band-2026-08-10-v6-prototype</div>
         </div>
 
         <div class="toolbar">
@@ -838,7 +838,7 @@ body.side-panel-open .side-panel {
 APP_JS = r"""/* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-07-16-v5.3");
+console.log("Bisses build bisses-work-band-2026-08-10-v6-prototype");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -848,6 +848,11 @@ const MAX_ZOOM = 26;
 const SHOW_SYNTHETIC_TRACES_AT_ZOOM = 19;
 const SHOW_DETAILED_SEGMENTS_AT_ZOOM = 20.5;
 const SHOW_BICOLOR_SPLIT_AT_ZOOM = 23.5;
+
+// Architecture Work : le moteur stable reste disponible en secours.
+// Mettre "polyline" pour retrouver strictement le rendu stable v5.1.
+// Mettre "band" pour tester le prototype géométrique Option C.
+const SEGMENT_RENDER_ENGINE = "band";
 
 const MAP_SCALE_STEPS = [
   { min: 16, max: 16.5, label: "CN 1:1 million", layer: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale", format: "jpeg", maxNativeZoom: 26, muted: false },
@@ -886,14 +891,14 @@ const FALLBACK_CATEGORIES = {
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
-// Le halo blanc doit rester une seule trace continue.
-// Les traits colorés sont légèrement prolongés aux jonctions pour éviter
-// les trous blancs quand deux tronçons de couleurs différentes se rencontrent dans un angle.
-const SEGMENT_OUTLINE_LINE_CAP = "round";
-const SEGMENT_COLOR_LINE_CAP = "square";
+// Le moteur polyline conserve exactement les extrémités arrondies de la v5.1.
+const POLYLINE_LINE_CAP = "round";
 
-// Les cibles invisibles de clic restent arrondies pour garder une zone de clic confortable.
+// Les cibles invisibles de clic restent arrondies dans les deux moteurs.
 const HIT_LINE_CAP = "round";
+
+// Limite les pointes aux angles serrés lors de la construction des bandes.
+const BAND_MITER_LIMIT = 2.4;
 
 function clusterRadiusForZoom(zoom) {
   // Rayon en pixels : compromis entre v1 et v2.
@@ -947,6 +952,8 @@ const state = {
   bisseMarkers: createBisseMarkerLayer(),
   segmentOutlineLayer: null,
   segmentColorLayer: null,
+  segmentBandLayer: null,
+  segmentHitLayer: null,
   photoLayer: L.layerGroup()
 };
 
@@ -1672,7 +1679,7 @@ function refreshMarkerVisibility() {
   refreshLegendVisibility();
 }
 
-function removeVisibleSegments() {
+function clearSegmentLayers() {
   if (state.segmentOutlineLayer) {
     map.removeLayer(state.segmentOutlineLayer);
     state.segmentOutlineLayer = null;
@@ -1682,6 +1689,30 @@ function removeVisibleSegments() {
     map.removeLayer(state.segmentColorLayer);
     state.segmentColorLayer = null;
   }
+
+  if (state.segmentBandLayer) {
+    map.removeLayer(state.segmentBandLayer);
+    state.segmentBandLayer = null;
+  }
+
+  if (state.segmentHitLayer) {
+    map.removeLayer(state.segmentHitLayer);
+    state.segmentHitLayer = null;
+  }
+}
+
+// Nom historique gardé localement pour éviter qu'un appel ancien ne casse.
+function removeVisibleSegments() {
+  clearSegmentLayers();
+}
+
+function hasVisibleSegmentLayers() {
+  return Boolean(state.segmentColorLayer || state.segmentBandLayer);
+}
+
+function visibleSegmentLayerCount() {
+  const layer = state.segmentBandLayer || state.segmentColorLayer;
+  return layer ? layer.getLayers().length : 0;
 }
 
 function buildSyntheticFeatureCollection(dataList) {
@@ -1777,7 +1808,7 @@ function addHaloForPart(layerGroup, latlngs, style) {
     color: "#ffffff",
     weight: style.outlineWeight,
     opacity: style.opacity,
-    lineCap: SEGMENT_OUTLINE_LINE_CAP,
+    lineCap: POLYLINE_LINE_CAP,
     lineJoin: "round",
     interactive: false
   }).addTo(layerGroup);
@@ -1799,30 +1830,34 @@ function addClickTarget(layerGroup, latlngs, feature, style) {
   bindSegmentInteraction(target, feature);
 }
 
-function addSingleSegment(layerGroup, outlineGroup, feature) {
+function addSingleSegmentPolyline(layerGroup, outlineGroup, hitGroup, feature, drawHalo = true, bindVisible = true) {
   const parts = latlngPartsFromGeometry(feature.geometry);
   const style = segmentStyleForZoom();
   const color = feature.properties.__category_color || "#777777";
 
   for (const latlngs of parts) {
-    addHaloForPart(outlineGroup, latlngs, style);
+    if (drawHalo) {
+      addHaloForPart(outlineGroup, latlngs, style);
+    }
 
     const line = L.polyline(latlngs, {
       pane: "segmentColorPane",
       color,
       weight: style.colorWeight,
       opacity: style.opacity,
-      lineCap: SEGMENT_COLOR_LINE_CAP,
+      lineCap: POLYLINE_LINE_CAP,
       lineJoin: "round",
-      interactive: true
+      interactive: bindVisible
     }).addTo(layerGroup);
 
-    bindSegmentInteraction(line, feature);
-    addClickTarget(layerGroup, latlngs, feature, style);
+    if (bindVisible) {
+      bindSegmentInteraction(line, feature);
+    }
+    addClickTarget(hitGroup, latlngs, feature, style);
   }
 }
 
-function addBicolorSegment(layerGroup, outlineGroup, feature) {
+function addBicolorSegmentPolyline(layerGroup, outlineGroup, hitGroup, feature, drawHalo = true, bindVisible = true) {
   const parts = latlngPartsFromGeometry(feature.geometry);
   const style = bicolorStyleForZoom();
   const colors = Array.isArray(feature.properties.__bicolor_colors)
@@ -1833,17 +1868,19 @@ function addBicolorSegment(layerGroup, outlineGroup, feature) {
   const colorB = colors[1] || "#111111";
 
   for (const latlngs of parts) {
-    addHaloForPart(outlineGroup, latlngs, style);
+    if (drawHalo) {
+      addHaloForPart(outlineGroup, latlngs, style);
+    }
 
     const left = L.polyline(latlngs, {
       pane: "segmentColorPane",
       color: colorA,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: SEGMENT_COLOR_LINE_CAP,
+      lineCap: POLYLINE_LINE_CAP,
       lineJoin: "round",
       offset: -style.offset,
-      interactive: true
+      interactive: bindVisible
     }).addTo(layerGroup);
 
     const right = L.polyline(latlngs, {
@@ -1851,32 +1888,353 @@ function addBicolorSegment(layerGroup, outlineGroup, feature) {
       color: colorB,
       weight: style.flankWeight,
       opacity: style.opacity,
-      lineCap: SEGMENT_COLOR_LINE_CAP,
+      lineCap: POLYLINE_LINE_CAP,
       lineJoin: "round",
       offset: style.offset,
-      interactive: true
+      interactive: bindVisible
     }).addTo(layerGroup);
 
-    bindSegmentInteraction(left, feature);
-    bindSegmentInteraction(right, feature);
-    addClickTarget(layerGroup, latlngs, feature, style);
+    if (bindVisible) {
+      bindSegmentInteraction(left, feature);
+      bindSegmentInteraction(right, feature);
+    }
+    addClickTarget(hitGroup, latlngs, feature, style);
   }
 }
 
-function drawVisibleSegments(featureCollection) {
+function drawVisibleSegmentsPolyline(featureCollection) {
   const outlineGroup = L.layerGroup();
   const colorGroup = L.layerGroup();
+  const hitGroup = L.layerGroup();
 
   for (const feature of featureCollection.features || []) {
     if (feature.properties.__display_mode === "bicolor") {
-      addBicolorSegment(colorGroup, outlineGroup, feature);
+      addBicolorSegmentPolyline(colorGroup, outlineGroup, hitGroup, feature);
     } else {
-      addSingleSegment(colorGroup, outlineGroup, feature);
+      addSingleSegmentPolyline(colorGroup, outlineGroup, hitGroup, feature);
     }
   }
 
   state.segmentOutlineLayer = outlineGroup.addTo(map);
   state.segmentColorLayer = colorGroup.addTo(map);
+  state.segmentHitLayer = hitGroup.addTo(map);
+}
+
+function pointVector(from, to) {
+  return L.point(to.x - from.x, to.y - from.y);
+}
+
+function unitVector(vector) {
+  const length = Math.sqrt((vector.x * vector.x) + (vector.y * vector.y));
+  if (length < 0.000001) return null;
+  return L.point(vector.x / length, vector.y / length);
+}
+
+function dotProduct(a, b) {
+  return (a.x * b.x) + (a.y * b.y);
+}
+
+function normalForTangent(tangent) {
+  return L.point(-tangent.y, tangent.x);
+}
+
+function scaledPoint(vector, scale) {
+  return L.point(vector.x * scale, vector.y * scale);
+}
+
+function addPointVector(point, vector) {
+  return L.point(point.x + vector.x, point.y + vector.y);
+}
+
+function subtractPointVector(point, vector) {
+  return L.point(point.x - vector.x, point.y - vector.y);
+}
+
+function bandEndpointKey(latlng) {
+  const ll = L.latLng(latlng);
+  return `${ll.lat.toFixed(7)}:${ll.lng.toFixed(7)}`;
+}
+
+function makeBandPartRecord(feature, latlngs, partIndex, featureIndex) {
+  const cleanLatLngs = [];
+  const points = [];
+
+  for (const value of latlngs) {
+    const latlng = L.latLng(value);
+    const point = map.latLngToLayerPoint(latlng);
+    const previous = points[points.length - 1];
+
+    if (previous && point.distanceTo(previous) < 0.01) {
+      continue;
+    }
+
+    cleanLatLngs.push(latlng);
+    points.push(point);
+  }
+
+  if (points.length < 2) return null;
+
+  const bisseId = feature.properties.__bisse_id || `__feature_${featureIndex}`;
+
+  return {
+    id: `${featureIndex}:${partIndex}`,
+    feature,
+    bisseId,
+    latlngs: cleanLatLngs,
+    points,
+    startKey: bandEndpointKey(cleanLatLngs[0]),
+    endKey: bandEndpointKey(cleanLatLngs[cleanLatLngs.length - 1])
+  };
+}
+
+function buildBandPartRecords(featureCollection) {
+  const records = [];
+
+  (featureCollection.features || []).forEach((feature, featureIndex) => {
+    const parts = latlngPartsFromGeometry(feature.geometry);
+    parts.forEach((latlngs, partIndex) => {
+      const record = makeBandPartRecord(feature, latlngs, partIndex, featureIndex);
+      if (record) records.push(record);
+    });
+  });
+
+  return records;
+}
+
+function buildBandEndpointMap(records) {
+  const endpoints = new Map();
+
+  function add(key, record, atStart) {
+    if (!endpoints.has(key)) endpoints.set(key, []);
+    endpoints.get(key).push({ record, atStart });
+  }
+
+  for (const record of records) {
+    add(record.startKey, record, true);
+    add(record.endKey, record, false);
+  }
+
+  return endpoints;
+}
+
+function localEndpointTangent(record, atStart) {
+  const points = record.points;
+  if (atStart) {
+    return unitVector(pointVector(points[0], points[1]));
+  }
+  return unitVector(pointVector(points[points.length - 2], points[points.length - 1]));
+}
+
+function sharedEndpointTangent(record, atStart, endpointMap) {
+  const local = localEndpointTangent(record, atStart);
+  if (!local) return null;
+
+  const key = atStart ? record.startKey : record.endKey;
+  const connections = (endpointMap.get(key) || []).filter((entry) => (
+    entry.record.id !== record.id && entry.record.bisseId === record.bisseId
+  ));
+
+  // Une bifurcation n'est pas une transition simple : on conserve alors la tangente locale.
+  if (connections.length !== 1) return local;
+
+  const other = connections[0];
+  const currentPoints = record.points;
+  const otherPoints = other.record.points;
+  const endpoint = atStart ? currentPoints[0] : currentPoints[currentPoints.length - 1];
+  const currentInterior = atStart
+    ? currentPoints[1]
+    : currentPoints[currentPoints.length - 2];
+  const otherInterior = other.atStart
+    ? otherPoints[1]
+    : otherPoints[otherPoints.length - 2];
+
+  // Les deux vecteurs pointent depuis la frontière vers l'intérieur des tronçons.
+  // Leur différence donne une tangente bissectrice non orientée : chaque côté
+  // calcule la même ligne de coupe, même si les features GeoJSON sont inversées.
+  const currentAway = unitVector(pointVector(endpoint, currentInterior));
+  const otherAway = unitVector(pointVector(endpoint, otherInterior));
+  if (!currentAway || !otherAway) return local;
+
+  return unitVector(subtractPointVector(currentAway, otherAway)) || local;
+}
+
+function interiorBandOffset(points, index, halfWidth) {
+  const previousTangent = unitVector(pointVector(points[index - 1], points[index]));
+  const nextTangent = unitVector(pointVector(points[index], points[index + 1]));
+
+  if (!previousTangent || !nextTangent) {
+    const fallback = previousTangent || nextTangent || L.point(1, 0);
+    return scaledPoint(normalForTangent(fallback), halfWidth);
+  }
+
+  const previousNormal = normalForTangent(previousTangent);
+  const nextNormal = normalForTangent(nextTangent);
+  const miter = unitVector(addPointVector(previousNormal, nextNormal));
+
+  if (!miter) {
+    return scaledPoint(nextNormal, halfWidth);
+  }
+
+  const alignment = Math.max(0.2, Math.abs(dotProduct(miter, nextNormal)));
+  const miterLength = Math.min(halfWidth / alignment, halfWidth * BAND_MITER_LIMIT);
+  return scaledPoint(miter, miterLength);
+}
+
+function buildBandPolygonLatLngs(record, width, endpointMap) {
+  const points = record.points;
+  const halfWidth = Math.max(0.5, width / 2);
+  const offsets = [];
+
+  for (let index = 0; index < points.length; index += 1) {
+    if (index === 0 || index === points.length - 1) {
+      const atStart = index === 0;
+      const tangent = sharedEndpointTangent(record, atStart, endpointMap);
+      if (!tangent) return null;
+      offsets.push(scaledPoint(normalForTangent(tangent), halfWidth));
+    } else {
+      offsets.push(interiorBandOffset(points, index, halfWidth));
+    }
+  }
+
+  const left = points.map((point, index) => addPointVector(point, offsets[index]));
+  const right = points
+    .map((point, index) => subtractPointVector(point, offsets[index]))
+    .reverse();
+
+  return left.concat(right).map((point) => map.layerPointToLatLng(point));
+}
+
+function mergeTouchingBandParts(records) {
+  const remaining = records.map((record) => record.latlngs.slice());
+  const merged = [];
+
+  while (remaining.length) {
+    let chain = remaining.shift();
+    let changed = true;
+
+    while (changed) {
+      changed = false;
+      const chainStart = bandEndpointKey(chain[0]);
+      const chainEnd = bandEndpointKey(chain[chain.length - 1]);
+
+      for (let index = 0; index < remaining.length; index += 1) {
+        const candidate = remaining[index];
+        const candidateStart = bandEndpointKey(candidate[0]);
+        const candidateEnd = bandEndpointKey(candidate[candidate.length - 1]);
+
+        if (chainEnd === candidateStart) {
+          chain = chain.concat(candidate.slice(1));
+        } else if (chainEnd === candidateEnd) {
+          chain = chain.concat(candidate.slice().reverse().slice(1));
+        } else if (chainStart === candidateEnd) {
+          chain = candidate.slice(0, -1).concat(chain);
+        } else if (chainStart === candidateStart) {
+          chain = candidate.slice().reverse().slice(0, -1).concat(chain);
+        } else {
+          continue;
+        }
+
+        remaining.splice(index, 1);
+        changed = true;
+        break;
+      }
+    }
+
+    merged.push(chain);
+  }
+
+  return merged;
+}
+
+function addContinuousBandHalos(outlineGroup, records) {
+  const byBisse = new Map();
+  const baseStyle = segmentStyleForZoom();
+  const bicolorStyle = bicolorStyleForZoom();
+  const haloStyle = {
+    ...baseStyle,
+    outlineWeight: Math.max(baseStyle.outlineWeight, bicolorStyle.outlineWeight || 0)
+  };
+
+  for (const record of records) {
+    if (!byBisse.has(record.bisseId)) byBisse.set(record.bisseId, []);
+    byBisse.get(record.bisseId).push(record);
+  }
+
+  for (const bisseRecords of byBisse.values()) {
+    for (const latlngs of mergeTouchingBandParts(bisseRecords)) {
+      addHaloForPart(outlineGroup, latlngs, haloStyle);
+    }
+  }
+}
+
+function drawBandRecord(record, endpointMap, bandGroup, hitGroup) {
+  const style = segmentStyleForZoom();
+  const color = record.feature.properties.__category_color || "#777777";
+  const polygonLatLngs = buildBandPolygonLatLngs(record, style.colorWeight, endpointMap);
+
+  if (polygonLatLngs && polygonLatLngs.length >= 4) {
+    L.polygon(polygonLatLngs, {
+      pane: "segmentColorPane",
+      stroke: false,
+      fill: true,
+      fillColor: color,
+      fillOpacity: style.opacity,
+      interactive: false,
+      smoothFactor: 0
+    }).addTo(bandGroup);
+  } else {
+    // Repli local très rare : une géométrie dégénérée ne doit jamais faire disparaître la trace.
+    L.polyline(record.latlngs, {
+      pane: "segmentColorPane",
+      color,
+      weight: style.colorWeight,
+      opacity: style.opacity,
+      lineCap: POLYLINE_LINE_CAP,
+      lineJoin: "round",
+      interactive: false
+    }).addTo(bandGroup);
+  }
+
+  addClickTarget(hitGroup, record.latlngs, record.feature, style);
+}
+
+function drawVisibleSegmentsBand(featureCollection) {
+  const outlineGroup = L.layerGroup();
+  const bandGroup = L.layerGroup();
+  const hitGroup = L.layerGroup();
+  const records = buildBandPartRecords(featureCollection);
+  const endpointMap = buildBandEndpointMap(records);
+  const bicolorFeatures = new Set();
+
+  addContinuousBandHalos(outlineGroup, records);
+
+  for (const record of records) {
+    const feature = record.feature;
+
+    if (feature.properties.__display_mode === "bicolor") {
+      // Premier prototype : les bicolores gardent le moteur stable, sans halo segmentaire ajouté.
+      if (!bicolorFeatures.has(feature)) {
+        bicolorFeatures.add(feature);
+        addBicolorSegmentPolyline(bandGroup, outlineGroup, hitGroup, feature, false, false);
+      }
+      continue;
+    }
+
+    drawBandRecord(record, endpointMap, bandGroup, hitGroup);
+  }
+
+  state.segmentOutlineLayer = outlineGroup.addTo(map);
+  state.segmentBandLayer = bandGroup.addTo(map);
+  state.segmentHitLayer = hitGroup.addTo(map);
+}
+
+function drawVisibleSegments(featureCollection) {
+  if (SEGMENT_RENDER_ENGINE === "band") {
+    drawVisibleSegmentsBand(featureCollection);
+    return;
+  }
+
+  drawVisibleSegmentsPolyline(featureCollection);
 }
 
 async function refreshVisibleSegments() {
@@ -1889,7 +2247,7 @@ async function refreshVisibleSegments() {
   const style = segmentStyleForZoom();
   const bstyle = bicolorStyleForZoom();
   const zoom = roundedZoom();
-  const key = `${mode}:${style.key}:${bstyle.mode}:${zoom}:${state.index.length}:${state.cache.size}`;
+  const key = `${SEGMENT_RENDER_ENGINE}:${mode}:${style.key}:${bstyle.mode}:${zoom}:${state.index.length}:${state.cache.size}`;
 
   if (mode === "markers") {
     state.currentSegmentsKey = key;
@@ -1898,8 +2256,8 @@ async function refreshVisibleSegments() {
     return;
   }
 
-  if (state.currentSegmentsKey === key && state.segmentColorLayer) {
-    const count = state.segmentColorLayer.getLayers().length;
+  if (state.currentSegmentsKey === key && hasVisibleSegmentLayers()) {
+    const count = visibleSegmentLayerCount();
     updateScalePill(count, mode === "synthetic" ? "tracés" : "segments");
     return;
   }
@@ -2349,7 +2707,15 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-clusters-2026-07-16-v5.3
+bisses-work-band-2026-08-10-v6-prototype
+
+Moteurs de rendu des segments :
+- `polyline` : rendu stable v5.1, conservé comme fallback ;
+- `band` : prototype Work Option C, activé dans cette version.
+
+Le prototype Band construit les couleurs comme des surfaces à largeur constante en pixels,
+dessine un halo continu par bisse et garde une couche de clic invisible indépendante.
+Les segments bicolores restent temporairement rendus par le moteur polyline stable.
 
 Générer le site :
 python build_bisses.py
@@ -2390,7 +2756,7 @@ def main() -> None:
     build(out_dir)
 
     print("Plateforme Bisses générée.")
-    print("Version : bisses-ui-clusters-2026-07-16-v5.3")
+    print("Version : bisses-work-band-2026-08-10-v6-prototype")
     print(f"Dossier : {out_dir}")
     print("Fichiers générés : index.html, .nojekyll, assets/css/styles.css, assets/js/app.js")
     print("Données préservées : data/ et media/")
