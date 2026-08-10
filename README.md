@@ -4,15 +4,14 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-work-band-2026-08-10-v6-prototype
+bisses-ui-clusters-2026-08-10-v6.1
 
-Moteurs de rendu des segments :
-- `polyline` : rendu stable v5.1, conservé comme fallback ;
-- `band` : prototype Work Option C, activé dans cette version.
-
-Le prototype Band construit les couleurs comme des surfaces à largeur constante en pixels,
-dessine un halo continu par bisse et garde une couche de clic invisible indépendante.
-Les segments bicolores restent temporairement rendus par le moteur polyline stable.
+Rendu des tronçons — Option A :
+- traits et transitions arrondis issus de la base stable v5.1 ;
+- halo blanc continu par chaîne connectée ;
+- regroupement des tronçons contigus de même style ;
+- absorption visuelle prudente des micro-plages selon leur longueur en pixels ;
+- détail original complet à partir de z25.
 
 Générer le site :
 python build_bisses.py
