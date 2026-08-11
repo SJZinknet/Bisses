@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-08-11-v6.2");
+console.log("Bisses build bisses-ui-clusters-2026-08-11-v6.3");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -56,7 +56,7 @@ const FALLBACK_CATEGORIES = {
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
-// v6.2 : la trace colorée stable reste arrondie, puis chaque jonction reçoit
+// v6.3 : la trace colorée stable reste arrondie, puis chaque jonction reçoit
 // une petite pastille de raccord recouvrant entièrement les deux caps. Cette
 // pastille est partagée en deux par une coupe droite, normale à la tangente
 // commune de la bisse. Les angles restent ainsi souples, mais la frontière
@@ -65,6 +65,7 @@ const SEGMENT_LINE_CAP = "round";
 const TRANSITION_TANGENT_SAMPLE_PX = 10;
 const TRANSITION_PATCH_ARC_STEPS = 24;
 const TRANSITION_PATCH_OVERLAP_PX = 0.35;
+const TRANSITION_PATCH_OVERSCAN_PX = 0.35;
 
 // Les cibles invisibles de clic restent arrondies pour garder une zone de clic confortable.
 const HIT_LINE_CAP = "round";
@@ -1122,6 +1123,39 @@ function buildDisplayColorRuns(records) {
   return mergeAdjacentDisplayRuns(runs);
 }
 
+function snapAdjacentDisplayRunBoundaries(runs) {
+  for (let index = 0; index < runs.length - 1; index += 1) {
+    const leftCoordinates = runs[index].coordinates || [];
+    const rightCoordinates = runs[index + 1].coordinates || [];
+    if (!leftCoordinates.length || !rightCoordinates.length) continue;
+
+    const leftEnd = leftCoordinates[leftCoordinates.length - 1];
+    const rightStart = rightCoordinates[0];
+    if (coordinateKey(leftEnd) !== coordinateKey(rightStart)) continue;
+
+    // Les chaînes tolèrent volontairement de minuscules différences de
+    // coordonnées (clé arrondie à 7 décimales). À très fort zoom, ces écarts
+    // suffisent toutefois à décentrer les deux caps de plusieurs pixels.
+    // Le rendu utilise donc leur milieu exact, sans modifier le GeoJSON source.
+    const shared = leftEnd.slice();
+    shared[0] = (Number(leftEnd[0]) + Number(rightStart[0])) / 2;
+    shared[1] = (Number(leftEnd[1]) + Number(rightStart[1])) / 2;
+
+    if (leftEnd.length > 2 && rightStart.length > 2) {
+      const leftElevation = Number(leftEnd[2]);
+      const rightElevation = Number(rightStart[2]);
+      if (Number.isFinite(leftElevation) && Number.isFinite(rightElevation)) {
+        shared[2] = (leftElevation + rightElevation) / 2;
+      }
+    }
+
+    leftCoordinates[leftCoordinates.length - 1] = shared.slice();
+    rightCoordinates[0] = shared.slice();
+  }
+
+  return runs;
+}
+
 function displayRunPixelLength(run) {
   let length = 0;
   const coordinates = run.coordinates || [];
@@ -1251,7 +1285,9 @@ function buildGeneralizedDisplayFeatureCollection(featureCollection, allowAbsorp
   chains.forEach((chain, chainIndex) => {
     const chainId = `${chain.bisseId}:${chainIndex}`;
     const colorRuns = buildDisplayColorRuns(chain.records);
-    const displayRuns = generalizeDisplayRuns(colorRuns, zoom);
+    const displayRuns = snapAdjacentDisplayRunBoundaries(
+      generalizeDisplayRuns(colorRuns, zoom)
+    );
 
     displayRuns.forEach((run, runIndex) => {
       features.push(displayRunFeature(run, chainId, runIndex));
@@ -1630,13 +1666,15 @@ function transitionPatchRadius(record) {
     record.previousFeature.properties.__display_mode === "bicolor"
     || record.nextFeature.properties.__display_mode === "bicolor"
   );
-  if (!hasBicolor) return baseStyle.colorWeight / 2;
+  if (!hasBicolor) {
+    return (baseStyle.colorWeight / 2) + TRANSITION_PATCH_OVERSCAN_PX;
+  }
 
   const splitStyle = bicolorStyleForZoom();
   return Math.max(
     baseStyle.colorWeight / 2,
     (splitStyle.flankWeight / 2) + splitStyle.offset
-  );
+  ) + TRANSITION_PATCH_OVERSCAN_PX;
 }
 
 function localPatchPointToLatLng(record, point) {

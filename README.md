@@ -4,7 +4,7 @@ Plateforme statique GitHub Pages pour l’inventaire cartographique des bisses d
 
 Version générée par :
 build_bisses.py
-bisses-ui-clusters-2026-08-11-v6.2
+bisses-ui-clusters-2026-08-11-v6.3
 
 Rendu des tronçons — coupes droites partagées :
 - halo blanc continu par chaîne connectée ;
@@ -12,6 +12,7 @@ Rendu des tronçons — coupes droites partagées :
 - absorption visuelle prudente des micro-plages selon leur longueur en pixels ;
 - tangente commune calculée à chaque transition, y compris dans les angles ;
 - coupes colorées droites, jointives et perpendiculaires à cette tangente ;
+- recalage visuel des extrémités quasi identiques sur un point commun ;
 - léger recouvrement sous-pixel pour supprimer les coutures d'anticrénelage ;
 - extrémités réelles du bisse conservées arrondies ;
 - détail original complet à partir de z25.
