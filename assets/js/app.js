@@ -1,7 +1,7 @@
 /* global L */
 "use strict";
 
-console.log("Bisses build bisses-ui-clusters-2026-08-10-v6.1");
+console.log("Bisses build bisses-ui-clusters-2026-08-11-v6.2");
 
 const VALAIS_CENTER = [46.22, 7.55];
 const VALAIS_ZOOM = 17;
@@ -56,8 +56,15 @@ const FALLBACK_CATEGORIES = {
 // En mode détaillé simplifié, avant le rendu bicolore complet, il est rendu en noir.
 const BICOLOR_SIMPLIFIED_COLOR = "#111111";
 
-// Retour au rendu stable v5.1 : traits et transitions arrondis.
+// v6.2 : la trace colorée stable reste arrondie, puis chaque jonction reçoit
+// une petite pastille de raccord recouvrant entièrement les deux caps. Cette
+// pastille est partagée en deux par une coupe droite, normale à la tangente
+// commune de la bisse. Les angles restent ainsi souples, mais la frontière
+// interne entre couleurs est nette et jointive.
 const SEGMENT_LINE_CAP = "round";
+const TRANSITION_TANGENT_SAMPLE_PX = 10;
+const TRANSITION_PATCH_ARC_STEPS = 24;
+const TRANSITION_PATCH_OVERLAP_PX = 0.35;
 
 // Les cibles invisibles de clic restent arrondies pour garder une zone de clic confortable.
 const HIT_LINE_CAP = "round";
@@ -1254,6 +1261,133 @@ function buildGeneralizedDisplayFeatureCollection(featureCollection, allowAbsorp
   return { type: "FeatureCollection", features };
 }
 
+function pointVector(from, to) {
+  return { x: to.x - from.x, y: to.y - from.y };
+}
+
+function vectorLength(vector) {
+  return Math.hypot(vector.x, vector.y);
+}
+
+function normalizedVector(vector) {
+  const length = vectorLength(vector);
+  if (length < 1e-6) return null;
+  return { x: vector.x / length, y: vector.y / length };
+}
+
+function sampledPointAwayFromEndpoint(latlngs, fromStart, targetDistance) {
+  if (!Array.isArray(latlngs) || latlngs.length < 2) return null;
+
+  let index = fromStart ? 0 : latlngs.length - 1;
+  const step = fromStart ? 1 : -1;
+  let current = map.latLngToLayerPoint(latlngs[index]);
+  let remaining = targetDistance;
+
+  while (index + step >= 0 && index + step < latlngs.length) {
+    const next = map.latLngToLayerPoint(latlngs[index + step]);
+    const segment = pointVector(current, next);
+    const length = vectorLength(segment);
+
+    if (length >= 1e-6) {
+      if (length >= remaining) {
+        const ratio = remaining / length;
+        return L.point(
+          current.x + (segment.x * ratio),
+          current.y + (segment.y * ratio)
+        );
+      }
+      remaining -= length;
+    }
+
+    index += step;
+    current = next;
+  }
+
+  return current;
+}
+
+function sharedTransitionTangent(leftLatLngs, rightLatLngs) {
+  if (leftLatLngs.length < 2 || rightLatLngs.length < 2) return null;
+
+  const boundary = map.latLngToLayerPoint(leftLatLngs[leftLatLngs.length - 1]);
+  const before = sampledPointAwayFromEndpoint(
+    leftLatLngs,
+    false,
+    TRANSITION_TANGENT_SAMPLE_PX
+  );
+  const after = sampledPointAwayFromEndpoint(
+    rightLatLngs,
+    true,
+    TRANSITION_TANGENT_SAMPLE_PX
+  );
+  if (!before || !after) return null;
+
+  const incoming = normalizedVector(pointVector(before, boundary));
+  const outgoing = normalizedVector(pointVector(boundary, after));
+  if (!incoming && !outgoing) return null;
+  if (!incoming) return outgoing;
+  if (!outgoing) return incoming;
+
+  // La bisse change de direction au point de transition : la somme des deux
+  // directions donne la tangente de la bisse au niveau de l'angle (bissectrice).
+  const bisector = normalizedVector({
+    x: incoming.x + outgoing.x,
+    y: incoming.y + outgoing.y
+  });
+
+  // Repli sûr pour un demi-tour presque parfait, où la bissectrice est indéfinie.
+  return bisector || incoming;
+}
+
+function buildTransitionPatchRecords(featureCollection) {
+  const byChain = new Map();
+  const records = [];
+
+  for (const feature of featureCollection.features || []) {
+    const geometry = feature.geometry || {};
+    const coordinates = geometry.type === "LineString" ? (geometry.coordinates || []) : [];
+    if (coordinates.length < 2) continue;
+
+    const latlngs = coordinates.map((coord) => L.latLng(coord[1], coord[0]));
+    const record = {
+      feature,
+      latlngs,
+      startKey: coordinateKey(coordinates[0]),
+      endKey: coordinateKey(coordinates[coordinates.length - 1])
+    };
+
+    const chainId = feature.properties.__display_chain_id
+      || `${feature.properties.__bisse_id || "bisse"}:${byChain.size}`;
+    if (!byChain.has(chainId)) byChain.set(chainId, []);
+    byChain.get(chainId).push(record);
+  }
+
+  for (const chainRecords of byChain.values()) {
+    chainRecords.sort((a, b) => (
+      Number(a.feature.properties.__display_run_index || 0)
+      - Number(b.feature.properties.__display_run_index || 0)
+    ));
+
+    for (let index = 0; index < chainRecords.length - 1; index += 1) {
+      const previous = chainRecords[index];
+      const next = chainRecords[index + 1];
+      if (previous.endKey !== next.startKey) continue;
+
+      const tangent = sharedTransitionTangent(previous.latlngs, next.latlngs);
+      if (!tangent) continue;
+
+      records.push({
+        center: map.latLngToLayerPoint(previous.latlngs[previous.latlngs.length - 1]),
+        tangent,
+        previousFeature: previous.feature,
+        nextFeature: next.feature
+      });
+    }
+  }
+
+  return records;
+}
+
 function bindSegmentInteraction(layer, feature) {
   const title = feature.properties.__bisse_title || "Bisse";
   const baseType = feature.properties.__category_name || "Segment";
@@ -1434,9 +1568,168 @@ function addBicolorSegment(layerGroup, feature) {
   }
 }
 
+function circlePolygon(radius) {
+  const points = [];
+  for (let index = 0; index < TRANSITION_PATCH_ARC_STEPS; index += 1) {
+    const angle = (index / TRANSITION_PATCH_ARC_STEPS) * Math.PI * 2;
+    points.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
+  }
+  return points;
+}
+
+function clipPolygonOnAxis(points, axis, limit, keepLess) {
+  if (!points.length) return [];
+  const clipped = [];
+
+  function signedDistance(point) {
+    return keepLess ? point[axis] - limit : limit - point[axis];
+  }
+
+  for (let index = 0; index < points.length; index += 1) {
+    const current = points[index];
+    const previous = points[(index + points.length - 1) % points.length];
+    const currentDistance = signedDistance(current);
+    const previousDistance = signedDistance(previous);
+    const currentInside = currentDistance <= 0;
+    const previousInside = previousDistance <= 0;
+
+    if (currentInside !== previousInside) {
+      const ratio = previousDistance / (previousDistance - currentDistance);
+      clipped.push({
+        x: previous.x + ((current.x - previous.x) * ratio),
+        y: previous.y + ((current.y - previous.y) * ratio)
+      });
+    }
+
+    if (currentInside) clipped.push(current);
+  }
+
+  return clipped;
+}
+
+function patchStyleForFeature(feature) {
+  if (feature.properties.__display_mode === "bicolor") {
+    const colors = Array.isArray(feature.properties.__bicolor_colors)
+      ? feature.properties.__bicolor_colors.slice(0, 2)
+      : ["#ef6c00", "#111111"];
+    return {
+      mode: "bicolor",
+      colors: [colors[0] || "#ef6c00", colors[1] || "#111111"]
+    };
+  }
+
+  return {
+    mode: "single",
+    colors: [feature.properties.__category_color || "#777777"]
+  };
+}
+
+function transitionPatchRadius(record) {
+  const baseStyle = segmentStyleForZoom();
+  const hasBicolor = (
+    record.previousFeature.properties.__display_mode === "bicolor"
+    || record.nextFeature.properties.__display_mode === "bicolor"
+  );
+  if (!hasBicolor) return baseStyle.colorWeight / 2;
+
+  const splitStyle = bicolorStyleForZoom();
+  return Math.max(
+    baseStyle.colorWeight / 2,
+    (splitStyle.flankWeight / 2) + splitStyle.offset
+  );
+}
+
+function localPatchPointToLatLng(record, point) {
+  const normal = { x: -record.tangent.y, y: record.tangent.x };
+  return map.layerPointToLatLng(L.point(
+    record.center.x + (record.tangent.x * point.x) + (normal.x * point.y),
+    record.center.y + (record.tangent.y * point.x) + (normal.y * point.y)
+  ));
+}
+
+function addTransitionPatchPolygon(layerGroup, record, localPoints, color, opacity) {
+  if (localPoints.length < 3) return;
+  L.polygon(localPoints.map((point) => localPatchPointToLatLng(record, point)), {
+    pane: "segmentColorPane",
+    stroke: false,
+    fill: true,
+    fillColor: color,
+    fillOpacity: opacity,
+    interactive: false,
+    smoothFactor: 0
+  }).addTo(layerGroup);
+}
+
+function addStyledTransitionHalf(layerGroup, record, localPoints, feature, opacity) {
+  const style = patchStyleForFeature(feature);
+
+  if (style.mode === "single") {
+    addTransitionPatchPolygon(layerGroup, record, localPoints, style.colors[0], opacity);
+    return;
+  }
+
+  // PolylineOffset place l'offset négatif du côté -normale : on reproduit
+  // donc exactement la répartition longitudinale des deux couleurs.
+  const colorAHalf = clipPolygonOnAxis(
+    localPoints,
+    "y",
+    TRANSITION_PATCH_OVERLAP_PX,
+    true
+  );
+  const colorBHalf = clipPolygonOnAxis(
+    localPoints,
+    "y",
+    -TRANSITION_PATCH_OVERLAP_PX,
+    false
+  );
+  addTransitionPatchPolygon(layerGroup, record, colorAHalf, style.colors[0], opacity);
+  addTransitionPatchPolygon(layerGroup, record, colorBHalf, style.colors[1], opacity);
+}
+
+function addStraightTransitionPatch(layerGroup, record) {
+  const baseStyle = segmentStyleForZoom();
+  const radius = transitionPatchRadius(record);
+  const disc = circlePolygon(radius);
+
+  // Efface d'abord les caps colorés superposés avec la même base blanche que
+  // le halo ; les couleurs semi-opaques gardent ainsi exactement leur teinte.
+  // Le disque blanc et les deux demi-disques utilisent le même polygone :
+  // aucune couture ne peut apparaître sur leur bord extérieur.
+  addTransitionPatchPolygon(layerGroup, record, disc, "#ffffff", 1);
+
+  const previousHalf = clipPolygonOnAxis(
+    disc,
+    "x",
+    TRANSITION_PATCH_OVERLAP_PX,
+    true
+  );
+  const nextHalf = clipPolygonOnAxis(
+    disc,
+    "x",
+    -TRANSITION_PATCH_OVERLAP_PX,
+    false
+  );
+
+  addStyledTransitionHalf(
+    layerGroup,
+    record,
+    previousHalf,
+    record.previousFeature,
+    baseStyle.opacity
+  );
+  addStyledTransitionHalf(
+    layerGroup,
+    record,
+    nextHalf,
+    record.nextFeature,
+    baseStyle.opacity
+  );
+}
+
 function drawVisibleSegments(featureCollection) {
   const outlineGroup = L.layerGroup();
   const colorGroup = L.layerGroup();
+  const transitions = buildTransitionPatchRecords(featureCollection);
 
   addContinuousSegmentHalos(outlineGroup, featureCollection);
 
@@ -1446,6 +1739,10 @@ function drawVisibleSegments(featureCollection) {
     } else {
       addSingleSegment(colorGroup, feature);
     }
+  }
+
+  for (const transition of transitions) {
+    addStraightTransitionPatch(colorGroup, transition);
   }
 
   state.segmentOutlineLayer = outlineGroup.addTo(map);
