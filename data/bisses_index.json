@@ -8,6 +8,14 @@
     "segments": "data/bisses/alte-suon-eischoll/segments.geojson"
   },
   {
+    "id": "bisse-de-bruson",
+    "title": "Bisse de Bruson",
+    "region": "Dranses -Martigny",
+    "commune": "Val de Bagnes",
+    "catalogue": "data/bisses/bisse-de-bruson/catalogue.json",
+    "segments": "data/bisses/bisse-de-bruson/segments.geojson"
+  },
+  {
     "id": "bisse-de-clavau",
     "title": "Bisse de Clavau",
     "region": "Liène",

@@ -1,0 +1,76 @@
+{
+  "schema_version": "0.1",
+  "project": {
+    "id": "bisse-de-bruson-2026",
+    "title": "Bisse de Bruson",
+    "year": 2026,
+    "source_folder": ""
+  },
+  "bisse_info": {
+    "slug": "bisse-de-bruson",
+    "title": "Bisse de Bruson",
+    "region": "Dranses -Martigny",
+    "commune": "Val de Bagnes",
+    "description": "Le bisse de Bruson, construit en 1908 a été abandonné en 1942. Réhabilité et remis en eau en 2014  il court maintenant de la prise dans le torrent de Versegères à la décharge dans le torrent de Bruson. Il comporte de magnifiques ouvrages en chéneaux.",
+    "itinerary": "A Bruson, à partir du Parking du télésiège, traverser le torrent de Bruson et accèder au bisse en traversant de nouveau le torrent sur une passerelle. Un chemin pédestre longe le bisse jusque peu avant la prise d’eau.",
+    "length_km": 2.6,
+    "altitude_min_m": 1190,
+    "altitude_max_m": 1260,
+    "difficulty": "T2",
+    "marked_trail": true,
+    "state": "part. en eau",
+    "tags": [
+      "bazot",
+      "marteau"
+    ],
+    "communes": "Val de Bagnes"
+  },
+  "segment_categories": [
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
+    },
+    {
+      "id": "open",
+      "name": "À ciel ouvert",
+      "file_code": "CIEL_OUVERT",
+      "color": "#1e88e5"
+    },
+    {
+      "id": "abandoned",
+      "name": "Abandonné",
+      "file_code": "ABANDONNE",
+      "color": "#ef6c00"
+    }
+  ],
+  "photos": [],
+  "external_resources": [],
+  "inventory_info": {
+    "nom": "Bisse de Bruson",
+    "slug": "bisse-de-bruson",
+    "url": "https://bisses-valais.ch/bisses/bisse-de-bruson/",
+    "description": "Le bisse de Bruson, construit en 1908 a été abandonné en 1942. Réhabilité et remis en eau en 2014  il court maintenant de la prise dans le torrent de Versegères à la décharge dans le torrent de Bruson. Il comporte de magnifiques ouvrages en chéneaux.",
+    "itineraire": "A Bruson, à partir du Parking du télésiège, traverser le torrent de Bruson et accèder au bisse en traversant de nouveau le torrent sur une passerelle. Un chemin pédestre longe le bisse jusque peu avant la prise d’eau.",
+    "region": "Dranses -Martigny",
+    "communes": "Val de Bagnes",
+    "etat": "part. en eau",
+    "sentier": "part. balisé",
+    "cotation": "T2",
+    "tags": "bazot, marteau",
+    "longueur_km": 2.6,
+    "altitude_haut_m": 1260,
+    "altitude_bas_m": 1190,
+    "prise_eau": "Torrent de Versegères",
+    "zones_irriguees": "",
+    "autres_noms": "Bisse des Ravines, Rëya di Rouëna",
+    "classement_ad": "**",
+    "sdt_numero": 269,
+    "sdt_importance": "Régional",
+    "post_modified": "",
+    "_source_file": "bisses_valais_consolidation_api_mvb_complement_xml_autres_noms.xlsx",
+    "_source_sheet": "Bisses_final",
+    "_imported_at": "2026-06-10T16:27:34"
+  }
+}

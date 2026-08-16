@@ -28,6 +28,12 @@
       "name": "À ciel ouvert",
       "file_code": "CIEL_OUVERT",
       "color": "#1e88e5"
+    },
+    {
+      "id": "canalized",
+      "name": "Canalisé",
+      "file_code": "CANALISE",
+      "color": "#111111"
     }
   ],
   "photos": [],
